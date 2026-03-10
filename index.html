@@ -34,6 +34,9 @@
         }
         
         .mas-brand { display: flex; align-items: center; gap: 15px; }
+        .mas-logo-box { background-color: #0b1f3f; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .mas-logo-circle { background-color: #b5985a; width: 54px; height: 54px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-family: "Times New Roman", Times, serif; font-size: 20px; letter-spacing: 1px; }
+        .mas-brand-text { color: #b5985a; font-family: "Times New Roman", Times, serif; font-size: 22px; line-height: 1.05; letter-spacing: 0.5px; }
         .header-right { text-align: right; font-size: 11px; color: #333; font-family: "Courier New", Courier, monospace; font-weight: bold; line-height: 1.6; border-left: 2px solid #ccc; padding-left: 20px;}
 
         #disclaimer {
@@ -100,6 +103,7 @@
         }
         .zhuang-badge { color: #d32f2f; margin-left: 5px; font-weight: 900; background: #ffebee; padding: 2px 6px; border: 1px solid #d32f2f;}
         
+        /* THE EMERGENCY HU BUTTON */
         #emergency-hu-btn {
             background-color: #d32f2f; color: #fff; border: 3px solid #b71c1c; padding: 12px 30px;
             font-weight: 900; cursor: pointer; border-radius: 4px; margin-bottom: 8px; font-size: 15px; letter-spacing: 3px;
@@ -136,7 +140,16 @@
         #player-bottom .hand .tile:hover { transform: translateY(-10px); border-bottom-color: #0b1f3f; box-shadow: 0 12px 20px rgba(0,0,0,0.3);}
         #player-bottom .hand .tile:last-child.drawn-tile { margin-left: 20px; border-color: #d32f2f; border-bottom-width: 5px;}
 
-        .facedown { background-color: #b0bec5; border: 1px solid #546e7a; color: transparent; background-image: repeating-linear-gradient(45deg, #90a4ae 25%, transparent 25%, transparent 75%, #90a4ae 75%, #90a4ae), repeating-linear-gradient(45deg, #90a4ae 25%, #b0bec5 25%, #b0bec5 75%, #90a4ae 75%, #90a4ae); background-position: 0 0, 4px 4px; background-size: 8px 8px; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); }
+        /* AI VISIBLE HAND SIZING */
+        #player-top .tile, #player-left .tile, #player-right .tile { 
+            width: 24px; height: 34px; font-size: 24px; border-width: 1px; border-radius: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        #player-top .tile.special-text, #player-left .tile.special-text, #player-right .tile.special-text,
+        #player-top .tile.tile-red, #player-left .tile.tile-red, #player-right .tile.tile-red,
+        #player-top .tile.tile-green, #player-left .tile.tile-green, #player-right .tile.tile-green {
+            font-size: 18px;
+        }
+
         .tile.special-text, .tile.tile-red, .tile.tile-green { font-size: 36px; font-family: "SimHei", "Microsoft YaHei", sans-serif; }
         .tile-red { color: #c62828; font-weight: bold;} .tile-green { color: #2e7d32; font-weight: bold;} .special-text { font-weight: bold; color: #111; } 
         .bai-ban { width: 22px; height: 34px; border: 5px solid #1565c0; border-radius: 3px; box-sizing: border-box; }
@@ -219,8 +232,12 @@
             
             #emergency-hu-btn { padding: 10px 15px; font-size: 12px; margin-bottom: 10px; width: 90%; margin-left: auto; margin-right: auto; display: block;}
 
-            #player-top .facedown, #player-left .facedown, #player-right .facedown { width: 16px; height: 24px; border-width: 1px;}
             #player-top .tile, #player-left .tile, #player-right .tile { width: 18px; height: 26px; font-size: 18px; }
+            #player-top .tile.special-text, #player-left .tile.special-text, #player-right .tile.special-text,
+            #player-top .tile.tile-red, #player-left .tile.tile-red, #player-right .tile.tile-red,
+            #player-top .tile.tile-green, #player-left .tile.tile-green, #player-right .tile.tile-green {
+                font-size: 12px;
+            }
             #player-top .bai-ban, #player-left .bai-ban, #player-right .bai-ban { width: 10px; height: 14px; border-width: 2px; }
             .flower-num { font-size: 8px; padding: 1px 3px; top: -2px; right: -2px;}
             
@@ -271,10 +288,11 @@
 
     <div id="mas-header">
         <div class="header-content">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Monetary_Authority_of_Singapore_logo.svg/512px-Monetary_Authority_of_Singapore_logo.svg.png" alt="MAS Logo" style="height: 55px;">
-            <div class="header-left">
-                <h1>MONETARY AUTHORITY OF SINGAPORE</h1>
-                <h3>Financial Supervisory Division - Asset Ledger Audit (FARL-26)</h3>
+            <div class="mas-brand">
+                <div class="mas-logo-box">
+                    <div class="mas-logo-circle">MAS</div>
+                </div>
+                <div class="mas-brand-text">Monetary Authority<br>of Singapore</div>
             </div>
         </div>
         <div class="header-right">
@@ -285,8 +303,8 @@
     </div>
 
     <div id="disclaimer">
-        <strong>REGULATORY NOTICE (SEC. 42):</strong> The following matrix represents live asset reconciliation. Authorized entities must declare structural sequences (AUTHORIZE EAT), aggregate identical assets (EXECUTE PONG/KONG), and file immediate compliance reports upon discovering a fully reconciled ledger (FILE AUDIT). The value metric (TAI) evaluates asset purity, prevailing variables, and structural integrity.<br><br>
-        <span style="color: #c62828;"><strong>>> PATTERN RECOGNITION TRAINING MODE ENABLED:</strong> User deck restricted exclusively to Characters (Wan) to facilitate isolated pattern reading. AI Nodes simulate market environment via disconnected asset pools. <strong>Zha Hu / Missed Hu Penalty Active. Manual Audit Required. Fast Simulation Mode.</strong></span>
+        <strong>REGULATORY NOTICE (SEC. 42):</strong> The following matrix represents live asset reconciliation. Authorized entities must declare structural sequences (AUTHORIZE EAT), aggregate identical assets (EXECUTE PONG/KONG), and file immediate compliance reports upon discovering a fully reconciled ledger (EMERGENCY AUDIT). The value metric (TAI) evaluates asset purity, prevailing variables, and structural integrity.<br><br>
+        <span style="color: #c62828;"><strong>>> HYPER-VELOCITY TRAINING MODE ENABLED:</strong> User deck restricted exclusively to Characters (Wan) to facilitate isolated pattern reading. AI Nodes simulate market environment via disconnected asset pools with instant processing speeds. <strong>Zha Hu Penalty (-200 Units) and Negligence Penalty (-20 Units per Missed Audit) Active. System will NOT prompt for Audit Certification.</strong></span>
     </div>
 
     <div id="ledger-board">
@@ -602,7 +620,6 @@
                         scoring.push({name: "Pong Pong Hu (All Triplets)", tai: 2});
                     }
 
-                    // PING HU LOGIC: Strict validation. No Tai if it's a single wait.
                     if (form.valid && totalTriplets === 0 && !is7Pairs) {
                         if (!isSingleWait) {
                             if (hasBonus || hasHonors || exposedTriplets > 0) {
@@ -866,6 +883,7 @@
                 hands[playerIdx].push(tile);
                 document.getElementById('wall-count').innerText = userDeck.length + aiDeck.length;
                 if (playerIdx === 0) { isReplacementDraw = forceReplacement || wasBonus; }
+                hands[playerIdx].sort();
                 return tile;
             }
             return null;
@@ -904,7 +922,6 @@
             hideOverlay();
             for(let i=0; i<13; i++) { for(let p=0; p<4; p++) drawTile(p); }
             drawTile(dealer); 
-            hands[0].sort();
             
             gameState = 'PLAY';
             renderAll();
@@ -944,7 +961,7 @@
 
             let requiredTai = isZiMo ? 1 : 2;
             if (huResult.isHu && huResult.tai >= requiredTai) {
-                if (!isZiMo && missedHuCount > 0) missedHuCount--; // Rewarded for catching it
+                if (!isZiMo && missedHuCount > 0) missedHuCount--; 
                 pendingHuResult = huResult;
                 triggerWin(0, shooter);
             } else {
@@ -1088,28 +1105,18 @@
             
             if (fNum) content = `<div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">${char}<span class="flower-num">${fNum}</span></div>`;
 
-            if ((FLOWERS.includes(char) || ANIMALS.includes(char)) && isExposed) { extraClass = ''; } 
             return `<div class="tile ${extraClass}">${content}</div>`;
         }
 
         function renderMeldHtml(meldString) {
             let cleanString = meldString.replace(/\*/g, '');
-            let isAnKong = meldString.includes('*');
-            
-            if(isAnKong && meldString.length > 4) { 
-               return `<div class="meld">
-                    <div class="tile facedown"></div><div class="tile facedown"></div>
-                    <div class="tile facedown"></div><div class="tile facedown"></div>
-               </div>`;
-            }
-
             let tilesHtml = Array.from(cleanString).map(char => getTileHTML(char, true)).join('');
             return `<div class="meld">${tilesHtml}</div>`;
         }
 
         function renderAll() {
             for(let i=1; i<=3; i++) {
-                document.getElementById(`hand-${i}`).innerHTML = hands[i].map(() => `<div class="tile facedown"></div>`).join('');
+                document.getElementById(`hand-${i}`).innerHTML = hands[i].map(t => getTileHTML(t)).join('');
                 document.getElementById(`exposed-${i}`).innerHTML = exposed[i].map(renderMeldHtml).join('');
             }
 
@@ -1181,7 +1188,6 @@
         function playTile(index) {
             if (!isHumanTurn || gameState !== 'PLAY') return;
 
-            // Missed Zi Mo Check Before Discarding
             let tempHand = [...hands[0]];
             let wTile = tempHand[tempHand.length - 1]; 
             let flags = { isReplacementDraw: isReplacementDraw, isTianHu: dealer === 0 && totalDiscardsThisRound === 0, isDiHu: false, isRenHu: dealer !== 0 && discardsByPlayer[0] === 0 };
@@ -1267,7 +1273,6 @@
 
             if (discardingPlayer !== 0) {
                 
-                // Track Missed Discard Hus
                 let tempHand = [...hands[0], discardedTile];
                 let flags = { isReplacementDraw: false, isTianHu: false, isDiHu: totalDiscardsThisRound === 1 && dealer === discardingPlayer, isRenHu: false };
                 let huRes = evaluator.evaluate(tempHand, exposed[0], false, getSeatWind(0), roundWind, discardedTile, flags); 
@@ -1308,15 +1313,11 @@
 
                 if (canClaim) {
                     overlayHtml += `</div><button class="cancel-btn" onclick="cancelSelection()">DECLINE INTERVENTION</button>`;
-                    document.getElementById('status').innerText = "ACTION WINDOW: 1.2s REMAINING TO INTERCEPT ASSET.";
+                    document.getElementById('status').innerText = "ACTION WINDOW: AWAITING INTERCEPT OR MANUAL AUDIT.";
                     showOverlay(overlayHtml, discardedTile, "ASSET INTERCEPT: ACTION REQUIRED");
-                    turnTimer = setTimeout(() => cancelSelection(), 8000); 
                     return; 
                 } else {
-                    document.getElementById('status').innerText = "MARKET OPEN: 1.2s WINDOW TO DECLARE EMERGENCY AUDIT...";
-                    turnTimer = setTimeout(() => {
-                        finishTurn(discardingPlayer);
-                    }, 1200); 
+                    finishTurn(discardingPlayer);
                     return;
                 }
             }
@@ -1337,6 +1338,7 @@
             if (type === 'pong') {
                 for(let k=0; k<2; k++) hands[0].splice(hands[0].indexOf(tile), 1);
                 exposed[0].push(tile+tile+tile);
+                hands[0].sort();
                 renderAll();
                 turn = 0; 
                 isHumanTurn = true;
@@ -1348,6 +1350,7 @@
                 let drawn = drawTile(0, true); 
                 if (!drawn) { triggerDraw(); return; }
                 
+                hands[0].sort();
                 renderAll();
                 startHumanTurn(); 
             }
@@ -1366,6 +1369,7 @@
             meldArr.sort((a,b) => suit.indexOf(a) - suit.indexOf(b));
             exposed[0].push(meldArr.join(''));
             
+            hands[0].sort();
             renderAll();
             turn = 0; 
             isHumanTurn = true;
@@ -1380,6 +1384,7 @@
                 isReplacementDraw = false;
                 let drawn = drawTile(0); 
                 if (!drawn) { triggerDraw(); return; }
+                hands[0].sort();
                 startHumanTurn(); 
             } 
             else doAiTurn();
