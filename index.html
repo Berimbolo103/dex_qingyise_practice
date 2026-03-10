@@ -34,9 +34,6 @@
         }
         
         .mas-brand { display: flex; align-items: center; gap: 15px; }
-        .mas-logo-box { background-color: #0b1f3f; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-        .mas-logo-circle { background-color: #b5985a; width: 54px; height: 54px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-family: "Times New Roman", Times, serif; font-size: 20px; letter-spacing: 1px; }
-        .mas-brand-text { color: #b5985a; font-family: "Times New Roman", Times, serif; font-size: 22px; line-height: 1.05; letter-spacing: 0.5px; }
         .header-right { text-align: right; font-size: 11px; color: #333; font-family: "Courier New", Courier, monospace; font-weight: bold; line-height: 1.6; border-left: 2px solid #ccc; padding-left: 20px;}
 
         #disclaimer {
@@ -103,11 +100,10 @@
         }
         .zhuang-badge { color: #d32f2f; margin-left: 5px; font-weight: 900; background: #ffebee; padding: 2px 6px; border: 1px solid #d32f2f;}
         
-        /* THE EMERGENCY HU BUTTON */
         #emergency-hu-btn {
             background-color: #d32f2f; color: #fff; border: 3px solid #b71c1c; padding: 12px 30px;
             font-weight: 900; cursor: pointer; border-radius: 4px; margin-bottom: 8px; font-size: 15px; letter-spacing: 3px;
-            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); transition: 0.1s; z-index: 10000; position: relative; font-family: "Courier New", Courier, monospace;
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); transition: 0.1s; z-index: 100000; position: relative; font-family: "Courier New", Courier, monospace;
         }
         #emergency-hu-btn:hover { background-color: #f44336; transform: scale(1.02) translateY(-2px); box-shadow: 0 8px 20px rgba(211, 47, 47, 0.6);}
         #emergency-hu-btn:active { transform: scale(0.98); }
@@ -195,6 +191,7 @@
 
         #mas-footer { width: 98vw; max-width: 1400px; text-align: center; color: #546e7a; font-size: 11px; border-top: 2px solid #b0bec5; padding-top: 15px; font-family: Arial, sans-serif; margin-bottom: 20px; font-weight: bold;}
 
+        /* MOBILE OPTIMIZATION */
         @media screen and (max-width: 1000px) {
             body { padding: 0; }
             #mas-navbar { font-size: 9px; padding: 6px 10px; }
@@ -274,11 +271,10 @@
 
     <div id="mas-header">
         <div class="header-content">
-            <div class="mas-brand">
-                <div class="mas-logo-box">
-                    <div class="mas-logo-circle">MAS</div>
-                </div>
-                <div class="mas-brand-text">Monetary Authority<br>of Singapore</div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Monetary_Authority_of_Singapore_logo.svg/512px-Monetary_Authority_of_Singapore_logo.svg.png" alt="MAS Logo" style="height: 55px;">
+            <div class="header-left">
+                <h1>MONETARY AUTHORITY OF SINGAPORE</h1>
+                <h3>Financial Supervisory Division - Asset Ledger Audit (FARL-26)</h3>
             </div>
         </div>
         <div class="header-right">
@@ -418,11 +414,12 @@
                     let fake14 = [...testHand];
                     exposedRaw.forEach(m => {
                         let clean = m.replace(/\*/g, '');
-                        let mTiles = Array.from(clean).filter(c => !this.FLOWERS.includes(c) && !this.ANIMALS.includes(c));
-                        if (mTiles.length > 0) {
-                            let nonFei = mTiles.filter(c => c !== this.FEI);
-                            let isPong = nonFei.length > 0 && nonFei.every(c => c === nonFei[0]);
-                            if (mTiles.length >= 3 && isPong) mTiles = mTiles.slice(0, 3); // TRIMS KONGS TO PONGS
+                        // Strip bonus tiles from structure check
+                        let firstChar = Array.from(clean)[0];
+                        if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar)) {
+                            let isPong = clean.length > 0 && Array.from(clean).every(c => c === clean[0]);
+                            let mTiles = Array.from(clean);
+                            if (mTiles.length >= 3 && isPong) mTiles = mTiles.slice(0, 3); 
                             fake14.push(...mTiles);
                         }
                     });
@@ -473,10 +470,11 @@
                         }
                     });
 
-                    let mTiles = Array.from(clean).filter(char => !this.FLOWERS.includes(char) && !this.ANIMALS.includes(char));
-                    if (mTiles.length > 0) {
-                        let nonFei = mTiles;
-                        let isPong = nonFei.length > 0 && nonFei.every(c => c === nonFei[0]);
+                    // Only process actual melds
+                    let firstChar = Array.from(clean)[0];
+                    if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar)) {
+                        let mTiles = Array.from(clean);
+                        let isPong = mTiles.length > 0 && mTiles.every(c => c === mTiles[0]);
                         
                         if (mTiles.length === 4 && isPong) kongCount++;
                         if (!isAnKong) hasExposedMelds = true;
@@ -786,6 +784,14 @@
         function getSeatWind(playerIndex) { return (playerIndex - dealer + 4) % 4; }
         function getWindName(index) { return ['EAST', 'SOUTH', 'WEST', 'NORTH'][index]; }
 
+        function getActualMeldsCount(playerIdx) {
+            return exposed[playerIdx].filter(m => {
+                let clean = m.replace(/\*/g, '');
+                let firstChar = Array.from(clean)[0];
+                return firstChar && !FLOWERS.includes(firstChar) && !ANIMALS.includes(firstChar);
+            }).length;
+        }
+
         function updateLedgerUI() {
             document.getElementById('round-indicator').innerText = `ROUND: ${getWindName(roundWind)}`;
             for(let i=0; i<4; i++) {
@@ -844,15 +850,13 @@
             }
         }
 
-        function isBonusTile(tile) { return FLOWERS.includes(tile) || ANIMALS.includes(tile); }
-
         function drawTile(playerIdx, forceReplacement = false) {
             let targetDeck = (playerIdx === 0) ? userDeck : aiDeck;
             if (targetDeck.length === 0) return null;
             let tile = targetDeck.pop();
             let wasBonus = false;
             
-            while (tile && isBonusTile(tile)) {
+            while (tile && (FLOWERS.includes(tile) || ANIMALS.includes(tile))) {
                 wasBonus = true;
                 exposed[playerIdx].push(tile);
                 if (targetDeck.length === 0) return null;
@@ -918,8 +922,8 @@
             let isZiMo = false;
             let shooter = null;
 
-            // Calculate effective hand length to handle Kongs correctly
-            let effectiveLength = hands[0].length + (exposed[0].length * 3);
+            let actualMeldsCount = getActualMeldsCount(0);
+            let effectiveLength = hands[0].length + (actualMeldsCount * 3);
 
             if (effectiveLength === 14) {
                 wTile = hands[0][hands[0].length - 1];
@@ -940,7 +944,7 @@
 
             let requiredTai = isZiMo ? 1 : 2;
             if (huResult.isHu && huResult.tai >= requiredTai) {
-                if (!isZiMo && missedHuCount > 0) missedHuCount--; // Intercept counts!
+                if (!isZiMo && missedHuCount > 0) missedHuCount--; // Rewarded for catching it
                 pendingHuResult = huResult;
                 triggerWin(0, shooter);
             } else {
@@ -1084,7 +1088,7 @@
             
             if (fNum) content = `<div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">${char}<span class="flower-num">${fNum}</span></div>`;
 
-            if (isBonusTile(char) && isExposed) { extraClass = ''; } 
+            if ((FLOWERS.includes(char) || ANIMALS.includes(char)) && isExposed) { extraClass = ''; } 
             return `<div class="tile ${extraClass}">${content}</div>`;
         }
 
@@ -1112,7 +1116,8 @@
             const humanHand = document.getElementById('hand-0');
             humanHand.innerHTML = '';
             
-            let effectiveLength = hands[0].length + (exposed[0].length * 3);
+            let actualMeldsCount = getActualMeldsCount(0);
+            let effectiveLength = hands[0].length + (actualMeldsCount * 3);
             let isHoldingDrawnTile = (effectiveLength % 3 === 2); 
 
             hands[0].forEach((tile, index) => {
@@ -1219,7 +1224,7 @@
             if (!drawn) { triggerDraw(); return; }
             renderAll();
 
-            // HYPER VELOCITY AI: Instant throw
+            // HYPER VELOCITY AI: 15ms execution
             setTimeout(() => {
                 let h = hands[turn];
                 let valid = h.map((t, idx) => ({t, idx}));
@@ -1303,12 +1308,15 @@
 
                 if (canClaim) {
                     overlayHtml += `</div><button class="cancel-btn" onclick="cancelSelection()">DECLINE INTERVENTION</button>`;
-                    document.getElementById('status').innerText = "ACTION WINDOW: AWAITING INTERCEPT OR MANUAL AUDIT.";
+                    document.getElementById('status').innerText = "ACTION WINDOW: 1.2s REMAINING TO INTERCEPT ASSET.";
                     showOverlay(overlayHtml, discardedTile, "ASSET INTERCEPT: ACTION REQUIRED");
+                    turnTimer = setTimeout(() => cancelSelection(), 8000); 
                     return; 
                 } else {
-                    // No valid Chi/Pong, skip user instantly (no timer)
-                    finishTurn(discardingPlayer);
+                    document.getElementById('status').innerText = "MARKET OPEN: 1.2s WINDOW TO DECLARE EMERGENCY AUDIT...";
+                    turnTimer = setTimeout(() => {
+                        finishTurn(discardingPlayer);
+                    }, 1200); 
                     return;
                 }
             }
