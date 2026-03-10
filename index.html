@@ -103,6 +103,7 @@
         }
         .zhuang-badge { color: #d32f2f; margin-left: 5px; font-weight: 900; background: #ffebee; padding: 2px 6px; border: 1px solid #d32f2f;}
         
+        /* THE EMERGENCY HU BUTTON */
         #emergency-hu-btn {
             background-color: #d32f2f; color: #fff; border: 3px solid #b71c1c; padding: 12px 30px;
             font-weight: 900; cursor: pointer; border-radius: 4px; margin-bottom: 8px; font-size: 15px; letter-spacing: 3px;
@@ -194,7 +195,6 @@
 
         #mas-footer { width: 98vw; max-width: 1400px; text-align: center; color: #546e7a; font-size: 11px; border-top: 2px solid #b0bec5; padding-top: 15px; font-family: Arial, sans-serif; margin-bottom: 20px; font-weight: bold;}
 
-        /* MOBILE OPTIMIZATION */
         @media screen and (max-width: 1000px) {
             body { padding: 0; }
             #mas-navbar { font-size: 9px; padding: 6px 10px; }
@@ -418,9 +418,13 @@
                     let fake14 = [...testHand];
                     exposedRaw.forEach(m => {
                         let clean = m.replace(/\*/g, '');
-                        Array.from(clean).forEach(c => {
-                            if(!this.FLOWERS.includes(c) && !this.ANIMALS.includes(c)) fake14.push(c);
-                        });
+                        let mTiles = Array.from(clean).filter(c => !this.FLOWERS.includes(c) && !this.ANIMALS.includes(c));
+                        if (mTiles.length > 0) {
+                            let nonFei = mTiles.filter(c => c !== this.FEI);
+                            let isPong = nonFei.length > 0 && nonFei.every(c => c === nonFei[0]);
+                            if (mTiles.length >= 3 && isPong) mTiles = mTiles.slice(0, 3); // TRIMS KONGS TO PONGS
+                            fake14.push(...mTiles);
+                        }
                     });
                     if (this.checkStructure(fake14)) waits.push(t);
                 }
@@ -600,6 +604,7 @@
                         scoring.push({name: "Pong Pong Hu (All Triplets)", tai: 2});
                     }
 
+                    // PING HU LOGIC: Strict validation. No Tai if it's a single wait.
                     if (form.valid && totalTriplets === 0 && !is7Pairs) {
                         if (!isSingleWait) {
                             if (hasBonus || hasHonors || exposedTriplets > 0) {
@@ -913,10 +918,13 @@
             let isZiMo = false;
             let shooter = null;
 
-            if (hands[0].length === 14) {
+            // Calculate effective hand length to handle Kongs correctly
+            let effectiveLength = hands[0].length + (exposed[0].length * 3);
+
+            if (effectiveLength === 14) {
                 wTile = hands[0][hands[0].length - 1];
                 isZiMo = true;
-            } else if (hands[0].length === 13) {
+            } else if (effectiveLength === 13) {
                 if (lastDiscardedTile && currentDiscarder !== 0 && currentDiscarder !== null) {
                     wTile = lastDiscardedTile;
                     evalHand.push(wTile);
@@ -932,7 +940,7 @@
 
             let requiredTai = isZiMo ? 1 : 2;
             if (huResult.isHu && huResult.tai >= requiredTai) {
-                if (!isZiMo && missedHuCount > 0) missedHuCount--; // Revert if intercept caught
+                if (!isZiMo && missedHuCount > 0) missedHuCount--; // Intercept counts!
                 pendingHuResult = huResult;
                 triggerWin(0, shooter);
             } else {
@@ -1103,7 +1111,9 @@
 
             const humanHand = document.getElementById('hand-0');
             humanHand.innerHTML = '';
-            let isHoldingDrawnTile = (hands[0].length % 3 === 2); 
+            
+            let effectiveLength = hands[0].length + (exposed[0].length * 3);
+            let isHoldingDrawnTile = (effectiveLength % 3 === 2); 
 
             hands[0].forEach((tile, index) => {
                 let divStr = getTileHTML(tile);
@@ -1209,6 +1219,7 @@
             if (!drawn) { triggerDraw(); return; }
             renderAll();
 
+            // HYPER VELOCITY AI: Instant throw
             setTimeout(() => {
                 let h = hands[turn];
                 let valid = h.map((t, idx) => ({t, idx}));
@@ -1227,7 +1238,7 @@
                 
                 renderAll();
                 processClaims(discarded, turn); 
-            }, 15); // HYPER-VELOCITY AI
+            }, 15); 
         }
 
         function getAllChiOptions(hand, tile) {
@@ -1294,7 +1305,7 @@
                     overlayHtml += `</div><button class="cancel-btn" onclick="cancelSelection()">DECLINE INTERVENTION</button>`;
                     document.getElementById('status').innerText = "ACTION WINDOW: AWAITING INTERCEPT OR MANUAL AUDIT.";
                     showOverlay(overlayHtml, discardedTile, "ASSET INTERCEPT: ACTION REQUIRED");
-                    return; // Infinite time for user to react if an overlay exists
+                    return; 
                 } else {
                     // No valid Chi/Pong, skip user instantly (no timer)
                     finishTurn(discardingPlayer);
