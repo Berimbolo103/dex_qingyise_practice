@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MAS Secure Portal - Pattern Recognition Training (FARL-26)</title>
+    <style>
+        /* EXTREME MAS CORPORATE THEME */
+        body { 
+            background-color: #cfd8dc; color: #111; 
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            margin: 0; padding: 0 0 40px 0; font-size: 12px; touch-action: manipulation; 
+            overflow-x: hidden;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.02) 1px, rgba(0,0,0,0.02) 2px);
+        }
+        
+        #mas-navbar {
+            width: 100%; background-color: #071526; color: #b5985a; display: flex; justify-content: space-between;
+            padding: 8px 30px; font-size: 11px; font-weight: bold; letter-spacing: 2px; box-sizing: border-box;
+            border-bottom: 3px solid #d32f2f; text-transform: uppercase; font-family: "Courier New", Courier, monospace;
+        }
+        .nav-links span { margin-right: 25px; cursor: pointer; transition: 0.2s; color: #fff;}
+        .nav-links span:hover { color: #b5985a; text-shadow: 0 0 5px #b5985a;}
+        .nav-sysinfo { color: #81c784; }
+        .live-indicator { display: inline-block; width: 8px; height: 8px; background-color: #d32f2f; border-radius: 50%; margin-right: 8px; animation: blink 1s infinite; box-shadow: 0 0 8px #d32f2f;}
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        #mas-header {
+            width: 98vw; max-width: 1400px; border: 4px double #0b1f3f; margin-top: 15px; margin-bottom: 10px; padding: 15px 30px; 
+            display: flex; justify-content: space-between; align-items: center; background: #fff; box-sizing: border-box;
+            box-shadow: 5px 5px 0px rgba(11, 31, 63, 0.15); border-top: 12px solid #0b1f3f;
+        }
+        
+        .mas-brand { display: flex; align-items: center; gap: 15px; }
+        .mas-logo-box { background-color: #0b1f3f; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .mas-logo-circle { background-color: #b5985a; width: 54px; height: 54px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-family: "Times New Roman", Times, serif; font-size: 20px; letter-spacing: 1px; }
+        .mas-brand-text { color: #b5985a; font-family: "Times New Roman", Times, serif; font-size: 22px; line-height: 1.05; letter-spacing: 0.5px; }
+        .header-right { text-align: right; font-size: 11px; color: #333; font-family: "Courier New", Courier, monospace; font-weight: bold; line-height: 1.6; border-left: 2px solid #ccc; padding-left: 20px;}
+
+        #disclaimer {
+            width: 98vw; max-width: 1400px; margin-bottom: 15px; text-align: justify; color: #111; font-size: 11px; line-height: 1.6;
+            border: 2px solid #0b1f3f; border-left: 10px solid #d32f2f; padding: 12px 25px; background-color: #fff; box-sizing: border-box;
+            font-family: "Courier New", Courier, monospace; font-weight: bold; box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        #ledger-board {
+            width: 98vw; max-width: 1400px; display: flex; background: #0b1f3f; border: 3px solid #0b1f3f; 
+            box-sizing: border-box; font-family: "Courier New", Courier, monospace; font-weight: bold; box-shadow: 5px 5px 0px rgba(0,0,0,0.15);
+            margin-bottom: 15px;
+        }
+        .ledger-title { font-size: 16px; font-weight: 900; color: #fff; padding: 12px 25px; text-align: center; letter-spacing: 2px; border-right: 3px solid #0b1f3f; display: flex; align-items: center; background: #d32f2f;}
+        .ledger-nodes-wrapper { display: flex; flex-grow: 1; width: 100%;}
+        .ledger-node { flex-grow: 1; padding: 12px; border-right: 1px solid #455a64; background: #f0f4f8; display: flex; flex-direction: column; justify-content: center; align-items: center; text-transform: uppercase;}
+        .ledger-node:last-child { border-right: none; }
+        .ledger-node.active-dealer { background: #fffde7; border-bottom: 4px solid #f57f17; color: #000;}
+        .ledger-name { font-size: 12px; margin-bottom: 5px; color: #546e7a;}
+        .ledger-node.active-dealer .ledger-name { color: #f57f17; font-weight: 900;}
+        .ledger-bal { font-size: 18px; color: #2e7d32; font-weight: 900;}
+        .ledger-bal.negative { color: #c62828; }
+
+        #dashboard-controls {
+            width: 98vw; max-width: 1400px; display: flex; justify-content: space-between; align-items: center; 
+            background: #fff; border: 3px solid #0b1f3f; padding: 10px 25px; margin-bottom: 20px; box-sizing: border-box;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+        .status-box { font-family: "Courier New", Courier, monospace; }
+        #status { color: #d32f2f; font-size: 15px; font-weight: 900; text-transform: uppercase; margin: 0 0 4px 0; letter-spacing: 1px;}
+        .meta-data { font-size: 13px; color: #0b1f3f; font-weight: bold; }
+
+        .board-container {
+            width: 98vw; max-width: 1400px; border: 4px solid #0b1f3f; background-color: #fff; position: relative;
+            box-shadow: 8px 8px 0px rgba(11,31,63,0.2); box-sizing: border-box; margin-bottom: 20px;
+        }
+        .board-title { 
+            background-color: #0b1f3f; color: #b5985a; padding: 8px 20px; font-size: 13px; 
+            font-weight: bold; letter-spacing: 3px; border-bottom: 3px solid #000; display: flex; justify-content: space-between; font-family: "Courier New", monospace; text-transform: uppercase;
+        }
+        
+        .board { 
+            position: relative; width: 100%; height: 72vh; max-height: 850px; 
+            background-color: #f4f6f8; overflow: hidden; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px), linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        
+        .board-watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 80px; font-weight: 900; color: rgba(11,31,63,0.03); font-family: Arial, sans-serif;
+            letter-spacing: 20px; pointer-events: none; white-space: nowrap; user-select: none; text-align: center; line-height: 1;
+        }
+
+        .player-frame {
+            position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            background-color: rgba(255, 255, 255, 0.95); border: 3px solid #0b1f3f; padding: 12px; 
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1); z-index: 10;
+        }
+        .frame-header {
+            width: 100%; background: #eceff1; color: #0b1f3f; font-family: "Courier New", Courier, monospace;
+            font-size: 11px; font-weight: 900; padding: 6px 0; text-align: center; border-bottom: 2px solid #0b1f3f;
+            margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1.5px;
+        }
+        .zhuang-badge { color: #d32f2f; margin-left: 5px; font-weight: 900; background: #ffebee; padding: 2px 6px; border: 1px solid #d32f2f;}
+        
+        #emergency-hu-btn {
+            background-color: #d32f2f; color: #fff; border: 3px solid #b71c1c; padding: 12px 30px;
+            font-weight: 900; cursor: pointer; border-radius: 4px; margin-bottom: 8px; font-size: 15px; letter-spacing: 3px;
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); transition: 0.1s; z-index: 10000; position: relative; font-family: "Courier New", Courier, monospace;
+        }
+        #emergency-hu-btn:hover { background-color: #f44336; transform: scale(1.02) translateY(-2px); box-shadow: 0 8px 20px rgba(211, 47, 47, 0.6);}
+        #emergency-hu-btn:active { transform: scale(0.98); }
+
+        .hand { display: flex; gap: 2px; justify-content: center; flex-wrap: nowrap; }
+        .exposed { display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap; margin-bottom: 6px;}
+        
+        #player-bottom { bottom: 15px; left: 50%; transform: translateX(-50%); width: 880px; padding-bottom: 15px; border-color: #0b1f3f; z-index: 20;}
+        #player-bottom .frame-header { background: #0b1f3f; color: #fff;}
+        #player-right { right: -150px; top: 50%; transform: translateY(-50%) rotate(-90deg); width: 440px;}
+        #player-top { top: 15px; left: 50%; transform: translateX(-50%); width: 440px;}
+        #player-left { left: -150px; top: 50%; transform: translateY(-50%) rotate(90deg); width: 440px;}
+
+        .discard-pile { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 580px; height: 320px; background-color: rgba(255,255,255,0.9); border: 3px dashed #0b1f3f; 
+            display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; padding: 15px; overflow: hidden; 
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.05); z-index: 5;
+        }
+
+        .tile { 
+            background-color: #fdfdfd; color: #000; border: 1px solid #111; 
+            width: 44px; height: 62px; display: flex; justify-content: center; align-items: center; 
+            font-size: 50px; cursor: default; user-select: none; overflow: hidden; line-height: 1;
+            box-shadow: 2px 3px 5px rgba(0,0,0,0.3); font-family: Arial, sans-serif; flex-shrink: 0; position: relative;
+            background-image: linear-gradient(to bottom right, #ffffff, #e0e0e0); border-radius: 2px;
+        }
+        
+        #player-bottom .hand .tile { cursor: pointer; transition: transform 0.1s; border-bottom: 5px solid #2e7d32;}
+        #player-bottom .hand .tile:hover { transform: translateY(-10px); border-bottom-color: #0b1f3f; box-shadow: 0 12px 20px rgba(0,0,0,0.3);}
+        #player-bottom .hand .tile:last-child.drawn-tile { margin-left: 20px; border-color: #d32f2f; border-bottom-width: 5px;}
+
+        .facedown { background-color: #b0bec5; border: 1px solid #546e7a; color: transparent; background-image: repeating-linear-gradient(45deg, #90a4ae 25%, transparent 25%, transparent 75%, #90a4ae 75%, #90a4ae), repeating-linear-gradient(45deg, #90a4ae 25%, #b0bec5 25%, #b0bec5 75%, #90a4ae 75%, #90a4ae); background-position: 0 0, 4px 4px; background-size: 8px 8px; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); }
+        .tile.special-text, .tile.tile-red, .tile.tile-green { font-size: 36px; font-family: "SimHei", "Microsoft YaHei", sans-serif; }
+        .tile-red { color: #c62828; font-weight: bold;} .tile-green { color: #2e7d32; font-weight: bold;} .special-text { font-weight: bold; color: #111; } 
+        .bai-ban { width: 22px; height: 34px; border: 5px solid #1565c0; border-radius: 3px; box-sizing: border-box; }
+        .flower-num { position: absolute; top: -1px; right: -1px; background: #c62828; color: #fff; font-size: 12px; font-weight: bold; padding: 2px 5px; font-family: "Courier New", Courier, monospace; border: 1px solid #000; line-height: 1; z-index: 5;}
+        
+        .meld { display: flex; gap: 2px; background-color: #eceff1; padding: 5px; border: 2px solid #90a4ae; flex-shrink: 0;}
+        .exposed .tile { width: 36px; height: 50px; font-size: 42px; }
+        .exposed .tile.special-text, .exposed .tile.tile-red, .exposed .tile.tile-green { font-size: 28px; }
+        .exposed .bai-ban { width: 18px; height: 26px; border-width: 4px; }
+        .exposed .flower-num { font-size: 10px; padding: 1px 4px; }
+        
+        .discard-pile .tile { width: 32px; height: 46px; font-size: 36px; margin: 1px; border-color: #78909c; z-index: 2;}
+        .discard-pile .tile.special-text, .discard-pile .tile.tile-red, .discard-pile .tile.tile-green { font-size: 24px; }
+        .discard-pile .bai-ban { width: 16px; height: 24px; border-width: 3px; }
+
+        #action-overlay {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(11, 31, 63, 0.98); border: 4px solid #d32f2f;
+            padding: 20px 30px; box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+            z-index: 9999; display: none; flex-direction: column; align-items: center;
+            max-height: 90vh; overflow-y: auto; width: auto; max-width: 90vw;
+            backdrop-filter: blur(8px);
+        }
+        .overlay-title { font-size: 16px; font-weight: 900; color: #fff; background: #d32f2f; padding: 8px 15px; margin-bottom: 15px; letter-spacing: 2px; font-family: "Courier New", Courier, monospace; text-align: center; width: 100%; box-sizing: border-box;}
+        .overlay-target-tile { margin-bottom: 15px; transform: scale(1.3); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .action-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%;}
+
+        .terminal-log {
+            background: #000; color: #0f0; font-family: "Courier New", Courier, monospace;
+            padding: 15px; border: 2px solid #333; width: 100%; box-sizing: border-box;
+            margin-bottom: 15px; text-align: left; font-size: 13px; line-height: 1.6;
+            box-shadow: inset 0 0 20px rgba(0,255,0,0.1); text-transform: uppercase;
+        }
+
+        button { 
+            background-color: #eceff1; border: 2px solid #0b1f3f; color: #0b1f3f; padding: 10px 15px; 
+            font-size: 12px; font-weight: 900; cursor: pointer; transition: 0.2s; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; font-family: "Segoe UI", Arial, sans-serif;
+            text-transform: uppercase; box-shadow: 3px 3px 0px rgba(26,54,93,0.2);
+        }
+        button:hover { background-color: #fff; transform: translateY(-2px); box-shadow: 5px 5px 0px rgba(0,0,0,0.4);}
+        .btn-hu { border-color: #c62828; color: #fff; background-color: #d32f2f; box-shadow: 3px 3px 0px rgba(198,40,40,0.2);}
+        .btn-hu:hover { background-color: #f44336; box-shadow: 5px 5px 0px rgba(198,40,40,0.3);}
+        .cancel-btn { border-color: #546e7a !important; color: #fff !important; background-color: #546e7a; width: 100%; margin-top: 15px;}
+        .cancel-btn:hover { background-color: #78909c; }
+
+        #audit-history-container { width: 98vw; max-width: 1400px; background: #fff; border: 4px solid #0b1f3f; box-shadow: 6px 6px 0px rgba(11,31,63,0.15); margin-bottom: 30px; box-sizing: border-box;}
+        #audit-table { width: 100%; border-collapse: collapse; font-family: "Courier New", Courier, monospace; font-size: 12px; }
+        #audit-table th { background: #0b1f3f; color: #b5985a; padding: 12px; text-align: left; border: 1px solid #000; text-transform: uppercase; letter-spacing: 1.5px;}
+        #audit-table td { padding: 12px; border: 1px solid #ccc; color: #111; font-weight: bold;}
+        #audit-table tr:nth-child(even) { background-color: #f0f4f8; }
+
+        #mas-footer { width: 98vw; max-width: 1400px; text-align: center; color: #546e7a; font-size: 11px; border-top: 2px solid #b0bec5; padding-top: 15px; font-family: Arial, sans-serif; margin-bottom: 20px; font-weight: bold;}
+
+        /* MOBILE OPTIMIZATION */
+        @media screen and (max-width: 1000px) {
+            body { padding: 0; }
+            #mas-navbar { font-size: 9px; padding: 6px 10px; }
+            .nav-links span { margin-right: 10px; }
+            
+            #mas-header { flex-direction: column; align-items: flex-start; gap: 15px; padding: 15px;}
+            .mas-brand { transform: scale(0.85); transform-origin: left center; }
+            .header-right { text-align: left; border-left: none; padding-left: 0; border-top: 2px solid #ccc; padding-top: 10px; width: 100%;}
+            
+            #ledger-board { flex-direction: column; padding: 0; border: none; box-shadow: none; margin-bottom: 5px;}
+            .ledger-title { width: 100%; box-sizing: border-box; border-right: none; font-size: 14px;}
+            .ledger-nodes-wrapper { flex-wrap: wrap; }
+            .ledger-node { min-width: 50%; font-size: 11px; padding: 8px; border: 1px solid #ccc;}
+
+            #dashboard-controls { flex-direction: column; text-align: center; gap: 8px; padding: 12px; margin-bottom: 10px;}
+            #status { font-size: 14px; line-height: 1.3;}
+            
+            .board-container { width: 100vw; border-left: none; border-right: none; box-shadow: none; margin-bottom: 5px;}
+            .board { height: auto; min-height: 75vh; padding: 5px;}
+            .board-watermark { font-size: 50px; letter-spacing: 10px; }
+            
+            .player-frame { position: relative; width: 100% !important; left: auto !important; top: auto !important; right: auto !important; bottom: auto !important; transform: none !important; box-sizing: border-box; padding: 5px; margin-bottom: 5px; border-width: 2px;}
+            #player-top, #player-left, #player-right { flex-direction: row; justify-content: flex-start; flex-wrap: wrap; gap: 4px; padding: 4px; }
+            .frame-header { width: 100%; margin-bottom: 2px; font-size: 9px; padding: 2px; }
+            
+            #emergency-hu-btn { padding: 10px 15px; font-size: 12px; margin-bottom: 10px; width: 90%; margin-left: auto; margin-right: auto; display: block;}
+
+            #player-top .facedown, #player-left .facedown, #player-right .facedown { width: 16px; height: 24px; border-width: 1px;}
+            #player-top .tile, #player-left .tile, #player-right .tile { width: 18px; height: 26px; font-size: 18px; }
+            #player-top .bai-ban, #player-left .bai-ban, #player-right .bai-ban { width: 10px; height: 14px; border-width: 2px; }
+            .flower-num { font-size: 8px; padding: 1px 3px; top: -2px; right: -2px;}
+            
+            .discard-pile { position: relative; left: auto !important; top: auto !important; transform: none !important; width: 100%; flex-grow: 1; min-height: 180px; margin: 5px 0; box-sizing: border-box; padding: 5px; justify-content: center;}
+            .discard-pile .tile { width: 6.5vw; height: 9vw; font-size: 6vw; margin: 1px; }
+            .discard-pile .tile.special-text, .discard-pile .tile.tile-red, .discard-pile .tile.tile-green { font-size: 5vw; }
+            .discard-pile .bai-ban { width: 3vw; height: 4.5vw; border-width: 1px; }
+            .discard-title { font-size: 20px; white-space: normal;}
+            
+            #player-bottom { padding: 5px 2px 10px 2px; border: 2px solid #1a365d;}
+            .hand { gap: 1px; }
+            .tile { width: 6.5vw; height: 9.5vw; font-size: 6vw; border-width: 1px; border-radius: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
+            .tile.special-text, .tile.tile-red, .tile.tile-green { font-size: 4.8vw; }
+            .bai-ban { width: 3vw; height: 5vw; border-width: 2px; }
+            #player-bottom .hand .tile { border-bottom-width: 3px; }
+            #player-bottom .hand .tile:last-child.drawn-tile { margin-left: 2vw;}
+            
+            #action-overlay { width: 95vw; padding: 15px; box-sizing: border-box; border-width: 3px;}
+            #action-overlay .overlay-target-tile .tile { width: 14vw; height: 20vw; font-size: 14vw; } 
+            .action-row { flex-direction: column; width: 100%; gap: 6px;}
+            button { width: 100%; padding: 12px; font-size: 12px; margin: 0; justify-content: center; box-shadow: 2px 2px 0px rgba(0,0,0,0.3);}
+            .cancel-btn { margin-top: 10px; }
+            .terminal-log { font-size: 11px; padding: 10px; }
+
+            #audit-history-container { width: 100vw; border-left: none; border-right: none;}
+            #audit-table { font-size: 10px; }
+            #audit-table th, #audit-table td { padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mas-navbar">
+        <div class="nav-links">
+            <span><span class="live-indicator"></span>LIVE UPLINK</span>
+            <span>SYSTEM MENU</span>
+            <span>COMPLIANCE MODULES</span>
+            <span>AUDIT TRAIL</span>
+        </div>
+        <div class="nav-sysinfo">
+            SESSION: 8942-X | ENCRYPTION: AES-256 | USER: LEAD_AUDITOR_01
+        </div>
+    </div>
+
+    <div id="security-banner">
+        ⚠ RESTRICTED ACCESS: YOU ARE ACCESSING A GOVERNMENT SECURE NETWORK. UNAUTHORIZED DISSEMINATION OF DATA IS AN OFFENSE UNDER THE OFFICIAL SECRETS ACT.
+    </div>
+
+    <div id="mas-header">
+        <div class="header-content">
+            <div class="mas-brand">
+                <div class="mas-logo-box">
+                    <div class="mas-logo-circle">MAS</div>
+                </div>
+                <div class="mas-brand-text">Monetary Authority<br>of Singapore</div>
+            </div>
+        </div>
+        <div class="header-right">
+            DOC REF: MAS-FSD-2026-88<br>
+            CLASSIFICATION: STRICTLY CONFIDENTIAL<br>
+            TIMESTAMP: <span id="clock-timer">LIVE SECURE SYNC</span>
+        </div>
+    </div>
+
+    <div id="disclaimer">
+        <strong>REGULATORY NOTICE (SEC. 42):</strong> The following matrix represents live asset reconciliation. Authorized entities must declare structural sequences (AUTHORIZE EAT), aggregate identical assets (EXECUTE PONG/KONG), and file immediate compliance reports upon discovering a fully reconciled ledger (FILE AUDIT). The value metric (TAI) evaluates asset purity, prevailing variables, and structural integrity.<br><br>
+        <span style="color: #c62828;"><strong>>> PATTERN RECOGNITION TRAINING MODE ENABLED:</strong> User deck restricted exclusively to Characters (Wan) to facilitate isolated pattern reading. AI Nodes simulate market environment via disconnected asset pools. <strong>Zha Hu / Missed Hu Penalty Active. Manual Audit Required. Fast Simulation Mode.</strong></span>
+    </div>
+
+    <div id="ledger-board">
+        <div class="ledger-title" id="round-indicator">ROUND: EAST</div>
+        <div class="ledger-nodes-wrapper">
+            <div class="ledger-node" id="score-0"><span class="ledger-name">EAST (YOU)</span><span class="ledger-bal">300</span></div>
+            <div class="ledger-node" id="score-1"><span class="ledger-name">SOUTH (N02)</span><span class="ledger-bal">300</span></div>
+            <div class="ledger-node" id="score-2"><span class="ledger-name">WEST (N03)</span><span class="ledger-bal">300</span></div>
+            <div class="ledger-node" id="score-3"><span class="ledger-name">NORTH (N04)</span><span class="ledger-bal">300</span></div>
+        </div>
+    </div>
+
+    <div id="dashboard-controls">
+        <div class="status-box">
+            <div id="status">INITIALIZING SECURE LEDGER...</div>
+            <div class="meta-data">Unallocated Assets in Vault: <span id="wall-count">148</span></div>
+        </div>
+    </div>
+
+    <div class="board-container">
+        <div class="board-title">
+            <span>FIGURE 1: LIVE ASSET RECONCILIATION MATRIX</span>
+            <span style="color:#4caf50; font-family: monospace;">[ DATA STREAM ACTIVE ]</span>
+        </div>
+        <div class="board">
+            <div class="board-watermark">CLASSIFIED<br>MAS-FSD</div>
+            
+            <div id="player-top" class="player-frame">
+                <div class="frame-header" id="label-2">NODE 03: WEST ENTITY - UPLINK ACTIVE</div>
+                <div class="exposed" id="exposed-2"></div><div class="hand" id="hand-2"></div>
+            </div>
+            
+            <div id="player-left" class="player-frame">
+                <div class="frame-header" id="label-3">NODE 04: NORTH ENTITY - UPLINK ACTIVE</div>
+                <div class="exposed" id="exposed-3"></div><div class="hand" id="hand-3"></div>
+            </div>
+            
+            <div id="player-right" class="player-frame">
+                <div class="frame-header" id="label-1">NODE 02: SOUTH ENTITY - UPLINK ACTIVE</div>
+                <div class="exposed" id="exposed-1"></div><div class="hand" id="hand-1"></div>
+            </div>
+            
+            <div class="discard-pile" id="discard"></div>
+
+            <div id="action-overlay">
+                <div class="overlay-title" id="overlay-title">AUTHORIZATION REQUIRED</div>
+                <div class="overlay-target-tile" id="overlay-target"></div>
+                <div class="action-row" id="overlay-buttons"></div>
+            </div>
+            
+            <div id="player-bottom" class="player-frame">
+                <div class="frame-header" id="label-0" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 15px;">
+                    <span>NODE 01: LEAD AUDITOR (EAST) - SECURE TERMINAL</span>
+                </div>
+                <button id="emergency-hu-btn" onclick="forceHuCheck()">EMERGENCY AUDIT (HU)</button>
+                <div class="exposed" id="exposed-0"></div><div class="hand" id="hand-0"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="audit-history-container">
+        <div class="board-title">AUDIT TRAIL & RECONCILIATION LOG</div>
+        <table id="audit-table">
+            <thead>
+                <tr>
+                    <th>ROUND</th>
+                    <th>BENEFICIARY</th>
+                    <th>SOURCE</th>
+                    <th>VALUE (TAI)</th>
+                    <th>CLASSIFICATION SUMMARY</th>
+                </tr>
+            </thead>
+            <tbody id="audit-tbody">
+                </tbody>
+        </table>
+    </div>
+
+    <div id="mas-footer">
+        <p>Monetary Authority of Singapore © 2026. All Rights Reserved. Not for public distribution.</p>
+        <p>Data Classification: CONFIDENTIAL. Compliance Framework ISO/IEC 27001:2022 Verified.</p>
+    </div>
+
+    <script>
+        // --- 1. SUPERCHARGED EVALUATOR ---
+        class MahjongEvaluator {
+            constructor() {
+                // FEI IS REMOVED
+                this.FEI = '飛'; 
+                this.FLOWERS = ['🀢','🀣','🀤','🀥', '🀦','🀧','🀨','🀩']; 
+                this.ANIMALS = ['🐱','🐭','🐓','🐛']; 
+                this.WINDS = ['H1', 'H2', 'H3', 'H4']; 
+                this.TILE_MAP = {
+                    '🀙':'D1','🀚':'D2','🀛':'D3','🀜':'D4','🀝':'D5','🀞':'D6','🀟':'D7','🀠':'D8','🀡':'D9',
+                    '🀐':'B1','🀑':'B2','🀒':'B3','🀓':'B4','🀔':'B5','🀕':'B6','🀖':'B7','🀗':'B8','🀘':'B9',
+                    '🀇':'C1','🀈':'C2','🀉':'C3','🀊':'C4','🀋':'C5','🀌':'C6','🀍':'C7','🀎':'C8','🀏':'C9',
+                    '🀀':'H1','🀁':'H2','🀂':'H3','🀃':'H4','中':'H5','發':'H6','白':'H7' 
+                };
+            }
+
+            checkStructure(hand14) {
+                let feiCount = 0;
+                let natHand = hand14.map(t => this.TILE_MAP[t] || t);
+                
+                let counts = {};
+                natHand.forEach(t => counts[t] = (counts[t] || 0) + 1);
+                
+                let reqDaSan = Math.max(0, 3-(counts['H5']||0)) + Math.max(0, 3-(counts['H6']||0)) + Math.max(0, 3-(counts['H7']||0));
+                if (reqDaSan <= feiCount) return true;
+
+                if (hand14.length === 14) {
+                    if (this.is13Orphans(natHand, feiCount)) return true;
+                    if (this.isNineGates(natHand, feiCount)) return true;
+                    if (this.isSevenPairs(natHand, feiCount)) return true;
+                }
+                if (this.isStandardHu(natHand, feiCount).length > 0) return true;
+                return false;
+            }
+
+            getWaitList(hand13, exposedRaw) {
+                let uniqueTiles = Object.keys(this.TILE_MAP).filter(k => k !== this.FEI);
+                let waits = [];
+                for (let t of uniqueTiles) {
+                    let testHand = [...hand13, t];
+                    let fake14 = [...testHand];
+                    exposedRaw.forEach(m => {
+                        let clean = m.replace(/\*/g, '');
+                        Array.from(clean).forEach(c => {
+                            if(!this.FLOWERS.includes(c) && !this.ANIMALS.includes(c)) fake14.push(c);
+                        });
+                    });
+                    if (this.checkStructure(fake14)) waits.push(t);
+                }
+                return waits;
+            }
+
+            evaluate(hand, exposedRaw, isZiMo, seatWind, roundWind, winningTile = null, gameFlags = {}) {
+                let result = this._evaluateCore(hand, exposedRaw, isZiMo, seatWind, roundWind, winningTile, gameFlags);
+                
+                if (result.isHu) {
+                    let override = null;
+                    if (gameFlags.isTianHu) override = "Tian Hu (Heavenly Audit)";
+                    else if (gameFlags.isDiHu) override = "Di Hu (Earthly Audit)";
+                    else if (gameFlags.isRenHu) override = "Ren Hu (Human Audit)";
+
+                    if (override) {
+                        result.tai = 5;
+                        result.breakdown = `> ${override} : +5 Tai\n-----------------------\n` + result.breakdown + `\n> FIRST TURN OVERRIDE (MAX TAI)`;
+                    }
+                }
+                return result;
+            }
+
+            _evaluateCore(hand, exposedRaw, isZiMo, seatWind, roundWind, winningTile, gameFlags) {
+                let feiCount = 0;
+                let natHand = hand.map(t => this.TILE_MAP[t] || t);
+                
+                let natExposedSets = [];
+                let exposedTriplets = 0;
+                let exposedChows = 0;
+                let hasBonus = false;
+                let bonusTai = 0;
+                let mySeatFlower = this.FLOWERS[seatWind];
+                let hasExposedMelds = false;
+                let kongCount = 0;
+
+                exposedRaw.forEach(meld => {
+                    let isAnKong = meld.includes('*');
+                    let clean = meld.replace(/\*/g, '');
+
+                    Array.from(clean).forEach(char => {
+                        if (this.ANIMALS.includes(char)) { hasBonus = true; bonusTai++; }
+                        if (this.FLOWERS.includes(char)) {
+                            hasBonus = true;
+                            if (char === mySeatFlower) bonusTai++; 
+                        }
+                    });
+
+                    let mTiles = Array.from(clean).filter(char => !this.FLOWERS.includes(char) && !this.ANIMALS.includes(char));
+                    if (mTiles.length > 0) {
+                        let nonFei = mTiles;
+                        let isPong = nonFei.length > 0 && nonFei.every(c => c === nonFei[0]);
+                        
+                        if (mTiles.length === 4 && isPong) kongCount++;
+                        if (!isAnKong) hasExposedMelds = true;
+                        
+                        if (isPong) exposedTriplets++; else exposedChows++;
+                        
+                        let mapped = mTiles.map(c => this.TILE_MAP[c] || c);
+                        if (mapped.length >= 3 && isPong) mapped = mapped.slice(0, 3); 
+                        natExposedSets.push(mapped);
+                    }
+                });
+
+                if (kongCount === 4) return { isHu: true, breakdown: "> Shi Ba Luo Han (18 Arhats) : +5 Tai\n-----------------------\n> TOTAL RECONCILED TAI : 5 (Max)", tai: 5 };
+
+                let allTiles = [...natHand, ...natExposedSets.flat()];
+                
+                let totalCounts = {};
+                allTiles.forEach(t => totalCounts[t] = (totalCounts[t] || 0) + 1);
+                
+                let reqDaSan = Math.max(0, 3-(totalCounts['H5']||0)) + Math.max(0, 3-(totalCounts['H6']||0)) + Math.max(0, 3-(totalCounts['H7']||0));
+                if (reqDaSan <= feiCount) return { isHu: true, breakdown: "> Da San Yuan (Big 3 Dragons) : +5 Tai\n-----------------------\n> TOTAL RECONCILED TAI : 5 (Max)", tai: 5 };
+
+                if (hand.length === 14 && this.is13Orphans(natHand, feiCount)) return { isHu: true, breakdown: "> Shi San Yao (13 Orphans) : +5 Tai\n-----------------------\n> TOTAL RECONCILED TAI : 5 (Max)", tai: 5 };
+                if (hand.length === 14 && this.isNineGates(natHand, feiCount)) return { isHu: true, breakdown: "> Jiu Bao Lian Deng (9 Gates) : +5 Tai\n-----------------------\n> TOTAL RECONCILED TAI : 5 (Max)", tai: 5 };
+
+                let isTingFei = false;
+                let isSingleWait = false;
+
+                if (winningTile) {
+                    let baseHand = [...hand];
+                    let wIdx = baseHand.indexOf(winningTile);
+                    if (wIdx !== -1) baseHand.splice(wIdx, 1);
+                    
+                    let waits = this.getWaitList(baseHand, exposedRaw);
+                    if (waits.length >= 34) isTingFei = true;
+                    if (waits.length === 1) isSingleWait = true;
+                }
+
+                if (isTingFei && !isZiMo) return { isHu: false }; 
+
+                let standardForms = this.isStandardHu(natHand, feiCount); 
+                let is7Pairs = (hand.length === 14 && this.isSevenPairs(natHand, feiCount));
+                
+                let validStructures = [];
+                for (let form of standardForms) {
+                    validStructures.push({ is7Pairs: false, isLiguLigu: is7Pairs, formation: form });
+                }
+                if (is7Pairs && standardForms.length === 0) {
+                    validStructures.push({ is7Pairs: true, isLiguLigu: false, formation: { valid: false, triplets: 0, chows: 0, bestSets: [], pair: [] } });
+                }
+
+                if (validStructures.length === 0) return { isHu: false };
+
+                let bestResult = { isHu: false, tai: -1, breakdown: "" };
+
+                for (let struct of validStructures) {
+                    let scoring = [];
+                    let is7P = struct.is7Pairs;
+                    let isLL = struct.isLiguLigu;
+                    let form = struct.formation;
+
+                    if (isLL) scoring.push({name: "Ligu Ligu (Structured Sequences)", tai: 5});
+                    else if (is7P) scoring.push({name: "Qi Dui (Seven Random Pairs)", tai: 3});
+
+                    let parsedSets = form.valid ? [...form.bestSets, ...natExposedSets] : natExposedSets;
+                    let parsedPair = form.valid ? form.pair : [];
+
+                    let dragonCounts = {'H5':0, 'H6':0, 'H7':0};
+                    let windCounts = {'H1':0, 'H2':0, 'H3':0, 'H4':0};
+                    
+                    parsedSets.forEach(s => {
+                        let base = s[0];
+                        if (['H5','H6','H7'].includes(base)) dragonCounts[base]++;
+                        if (this.WINDS.includes(base)) windCounts[base]++;
+                    });
+                    if (parsedPair.length > 0) {
+                        let basePair = parsedPair[0];
+                        if (['H5','H6','H7'].includes(basePair)) dragonCounts[basePair] += 0.5;
+                        if (this.WINDS.includes(basePair)) windCounts[basePair] += 0.5;
+                    }
+
+                    let hasXiaoSanYuan = false;
+                    let dVals = Object.values(dragonCounts);
+                    if (dVals.filter(v => v >= 1).length === 2 && dVals.filter(v => v === 0.5).length === 1) hasXiaoSanYuan = true;
+
+                    let hasDaSiXi = false; let hasXiaoSiXi = false;
+                    let wVals = Object.values(windCounts);
+                    if (wVals.filter(v => v >= 1).length === 4) hasDaSiXi = true;
+                    else if (wVals.filter(v => v >= 1).length === 3 && wVals.filter(v => v === 0.5).length === 1) hasXiaoSiXi = true;
+
+                    if (hasXiaoSanYuan) scoring.push({name: "Xiao San Yuan (Small 3 Dragons)", tai: 3});
+                    if (hasDaSiXi && form.valid) scoring.push({name: "Da Si Xi (Big 4 Winds)", tai: 5}); 
+                    else if (hasXiaoSiXi && form.valid) scoring.push({name: "Xiao Si Xi (Small 4 Winds)", tai: 4});
+
+                    if (!hasXiaoSanYuan && form.valid) {
+                        if (dragonCounts['H5'] >= 1) scoring.push({name: "Asset: Red Dragon Pong", tai: 1});
+                        if (dragonCounts['H6'] >= 1) scoring.push({name: "Asset: Green Dragon Pong", tai: 1});
+                        if (dragonCounts['H7'] >= 1) scoring.push({name: "Asset: White Dragon Pong", tai: 1});
+                    }
+                    if (!hasDaSiXi && !hasXiaoSiXi && form.valid) {
+                        let roundW = this.WINDS[roundWind];
+                        let seatW = this.WINDS[seatWind];
+                        if (windCounts[roundW] >= 1) scoring.push({name: "Asset: Round Wind Pong", tai: 1});
+                        if (windCounts[seatW] >= 1) scoring.push({name: "Asset: Seat Wind Pong", tai: 1});
+                    }
+
+                    let isYaoJiu = allTiles.every(t => t && (t.includes('1') || t.includes('9') || t.includes('H')));
+                    if (isYaoJiu) scoring.push({name: "Hun Yao Jiu (Terminals/Honors)", tai: 2});
+
+                    let suitsPresent = new Set(allTiles.map(t => t.charAt(0)));
+                    let hasHonors = suitsPresent.has('H');
+                    suitsPresent.delete('H');
+                    
+                    if (suitsPresent.size === 1) {
+                        if (hasHonors) { scoring.push({name: "Ban Se (Half Flush)", tai: 2}); }
+                        else { scoring.push({name: "Qing Yi Se (Full Flush)", tai: 4}); }
+                    }
+
+                    let totalTriplets = exposedTriplets + (form.valid ? form.triplets : 0);
+                    let totalChows = exposedChows + (form.valid ? form.chows : 0);
+
+                    if (form.valid && totalTriplets === 4 && !hasExposedMelds) {
+                        return { isHu: true, breakdown: "> Si An Ke (4 Concealed Triplets) : +5 Tai\n-----------------------\n> TOTAL RECONCILED TAI : 5 (Max)", tai: 5 };
+                    } else if (form.valid && totalChows === 0 && !is7Pairs) {
+                        scoring.push({name: "Pong Pong Hu (All Triplets)", tai: 2});
+                    }
+
+                    if (form.valid && totalTriplets === 0 && !is7Pairs) {
+                        if (!isSingleWait) {
+                            if (hasBonus || hasHonors || exposedTriplets > 0) {
+                                scoring.push({name: "Chou Ping Hu (Dirty Sequence)", tai: 1}); 
+                            } else {
+                                scoring.push({name: "Ping Hu (Pure Sequence)", tai: 4}); 
+                            }
+                        }
+                    }
+
+                    if (isZiMo && !hasExposedMelds) scoring.push({name: "Men Qing (Fully Concealed)", tai: 1});
+                    if (isZiMo && gameFlags.isReplacementDraw) scoring.push({name: "Replacement Draw (Hua/Gang Shang)", tai: 1});
+
+                    if (bonusTai > 0) {
+                        scoring.push({name: "Bonus Assets (Animals/Valid Flowers)", tai: bonusTai});
+                    }
+
+                    let structTai = scoring.reduce((sum, item) => sum + item.tai, 0);
+                    
+                    if (structTai === 0 && isZiMo) {
+                        scoring.push({name: "Zi Mo (Self-Draw Minimum)", tai: 1});
+                        structTai = 1;
+                    }
+                    
+                    let finalTai = Math.min(structTai, 5); 
+                    let breakdownStr = scoring.map(s => `> ${s.name} : +${s.tai} Tai`).join('\n');
+                    breakdownStr += `\n-----------------------\n> TOTAL RECONCILED TAI : ${finalTai} ${finalTai >= 5 ? '(Capped)' : ''}`;
+
+                    if (finalTai > bestResult.tai) {
+                        bestResult = { isHu: true, breakdown: breakdownStr, tai: finalTai };
+                    }
+                }
+
+                return bestResult;
+            }
+
+            is13Orphans(natHand, feiCount) {
+                let orphans = ['D1','D9','B1','B9','C1','C9','H1','H2','H3','H4','H5','H6','H7'];
+                let missing = 0; let hasPair = false;
+                orphans.forEach(req => {
+                    let count = natHand.filter(t => t === req).length;
+                    if (count === 0) missing++;
+                    if (count >= 2) hasPair = true;
+                });
+                return (missing + (hasPair ? 0 : 1)) <= feiCount;
+            }
+
+            isNineGates(natHand, feiCount) {
+                if (natHand.length === 0) return false;
+                let suit = natHand[0].charAt(0);
+                if (suit === 'H') return false; 
+                for (let i = 0; i < natHand.length; i++) { if (natHand[i].charAt(0) !== suit) return false; }
+                let counts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0};
+                natHand.forEach(t => counts[parseInt(t.charAt(1))]++);
+                let req = {1:3, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1, 8:1, 9:3};
+                let missingTiles = 0;
+                for (let i = 1; i <= 9; i++) { if (counts[i] < req[i]) missingTiles += (req[i] - counts[i]); }
+                return missingTiles <= feiCount;
+            }
+
+            isSevenPairs(natHand, feiCount) {
+                let counts = {};
+                natHand.forEach(t => counts[t] = (counts[t] || 0) + 1);
+                let oddCount = 0;
+                for (let tile in counts) { if (counts[tile] % 2 !== 0) oddCount++; }
+                return oddCount === feiCount;
+            }
+
+            isStandardHu(tilesArray, availableFei) {
+                let counts = {};
+                tilesArray.forEach(t => counts[t] = (counts[t] || 0) + 1);
+                let uniqueTiles = Object.keys(counts);
+                let formations = [];
+
+                for (let i = 0; i < uniqueTiles.length; i++) {
+                    let pairTile = uniqueTiles[i];
+                    let feiNeededForPair = counts[pairTile] >= 2 ? 0 : 1;
+
+                    if (feiNeededForPair <= availableFei) {
+                        let testCounts = { ...counts };
+                        testCounts[pairTile] -= (2 - feiNeededForPair);
+                        let remainingFei = availableFei - feiNeededForPair;
+                        
+                        let suits = { D: [], B: [], C: [], H: [] };
+                        let totalTriplets = 0; let totalChows = 0;
+                        let combinedSets = [];
+
+                        for (let tile in testCounts) {
+                            for (let k = 0; k < testCounts[tile]; k++) {
+                                if (testCounts[tile] > 0 && suits[tile.charAt(0)]) suits[tile.charAt(0)].push(parseInt(tile.charAt(1)));
+                            }
+                        }
+
+                        let totalFeiRequired = 0;
+                        for (let suit in suits) {
+                            let r = this.minFeiToMeld(suits[suit], suit === 'H', suit);
+                            totalFeiRequired += r.fei;
+                            totalTriplets += r.triplets;
+                            totalChows += r.chows;
+                            combinedSets.push(...r.sets);
+                        }
+
+                        if (totalFeiRequired <= remainingFei) {
+                            formations.push({ valid: true, triplets: totalTriplets, chows: totalChows, bestSets: combinedSets, pair: [pairTile, pairTile] });
+                        }
+                    }
+                }
+                return formations;
+            }
+
+            minFeiToMeld(suitTiles, isHonour, prefix) {
+                if (suitTiles.length === 0) return {fei: 0, triplets: 0, chows: 0, sets: []};
+                let counts = {};
+                suitTiles.forEach(t => counts[t] = (counts[t] || 0) + 1);
+                let nums = Object.keys(counts).map(Number).sort((a,b) => a-b);
+                if (nums.length === 0) return {fei: 0, triplets: 0, chows: 0, sets: []};
+
+                let firstTile = nums[0];
+                let best = {fei: 999, triplets: 0, chows: 0, sets: []};
+
+                let feiForTriplet = counts[firstTile] >= 3 ? 0 : (3 - counts[firstTile]);
+                let tripletTest = [...suitTiles];
+                for (let i = 0; i < (3 - feiForTriplet); i++) tripletTest.splice(tripletTest.indexOf(firstTile), 1);
+                let tripRes = this.minFeiToMeld(tripletTest, isHonour, prefix);
+                if (feiForTriplet + tripRes.fei < best.fei) { 
+                    best = { fei: feiForTriplet + tripRes.fei, triplets: tripRes.triplets + 1, chows: tripRes.chows, sets: [[prefix+firstTile, prefix+firstTile, prefix+firstTile], ...tripRes.sets] }; 
+                }
+
+                if (!isHonour) {
+                    let feiForSequence = 0;
+                    let sequenceTest = [...suitTiles];
+                    sequenceTest.splice(sequenceTest.indexOf(firstTile), 1);
+                    
+                    let tile2 = sequenceTest.indexOf(firstTile + 1);
+                    if (tile2 !== -1) sequenceTest.splice(tile2, 1);
+                    else feiForSequence++;
+                    
+                    let tile3 = sequenceTest.indexOf(firstTile + 2);
+                    if (tile3 !== -1) sequenceTest.splice(tile3, 1);
+                    else feiForSequence++;
+                    
+                    let seqRes = this.minFeiToMeld(sequenceTest, isHonour, prefix);
+                    if (feiForSequence + seqRes.fei < best.fei) { 
+                        best = { fei: feiForSequence + seqRes.fei, triplets: seqRes.triplets, chows: seqRes.chows + 1, sets: [[prefix+firstTile, prefix+(firstTile+1), prefix+(firstTile+2)], ...seqRes.sets] }; 
+                    }
+                }
+                return best;
+            }
+        }
+        const evaluator = new MahjongEvaluator();
+
+        // --- 2. GAME SETUP & LEDGER STATE ---
+        const DOTS = ['🀙','🀚','🀛','🀜','🀝','🀞','🀟','🀠','🀡'];
+        const BAMS = ['🀐','🀑','🀒','🀓','🀔','🀕','🀖','🀗','🀘'];
+        const CHARS = ['🀇','🀈','🀉','🀊','🀋','🀌','🀍','🀎','🀏'];
+        const WINDS = ['🀀','🀁','🀂','🀃']; 
+        const DRAGONS = ['中','發','白'];   
+        const FLOWERS = ['🀢','🀣','🀤','🀥', '🀦','🀧','🀨','🀩']; 
+        const ANIMALS = ['🐱','🐭','🐓','🐛'];
+
+        let userDeck = []; let aiDeck = [];
+        let hands = { 0: [], 1: [], 2: [], 3: [] }; let exposed = { 0: [], 1: [], 2: [], 3: [] };
+        let turn = 0; let isHumanTurn = false; let turnTimer; let currentDiscarder = null;
+
+        let chips = [300, 300, 300, 300]; 
+        let dealer = 0; 
+        let roundWind = 0; 
+        let gameState = 'INIT'; 
+        let pendingHuResult = null; 
+        
+        let totalDiscardsThisRound = 0;
+        let discardsByPlayer = [0, 0, 0, 0];
+        let isReplacementDraw = false;
+        let lastDiscardedTile = null;
+        let missedHuCount = 0;
+        
+        let auditLog = [];
+
+        function getSeatWind(playerIndex) { return (playerIndex - dealer + 4) % 4; }
+        function getWindName(index) { return ['EAST', 'SOUTH', 'WEST', 'NORTH'][index]; }
+
+        function updateLedgerUI() {
+            document.getElementById('round-indicator').innerText = `ROUND: ${getWindName(roundWind)}`;
+            for(let i=0; i<4; i++) {
+                let el = document.getElementById(`score-${i}`);
+                let title = i === 0 ? "EAST (YOU)" : (i===1 ? "SOUTH (N02)" : (i===2 ? "WEST (N03)" : "NORTH (N04)"));
+                el.innerHTML = `<span class="ledger-name">${title}</span><span class="ledger-bal ${chips[i]<0?'negative':''}">${chips[i]}</span>`;
+                el.className = 'ledger-node';
+                if (i === dealer) el.classList.add('active-dealer');
+                
+                let seatStr = getWindName(getSeatWind(i));
+                let zhuangStr = (i === dealer) ? `<span class="zhuang-badge">[ZHUANG]</span>` : '';
+                let labelTitle = i === 0 ? `NODE 01: LEAD AUDITOR (${seatStr}) ${zhuangStr}` : `NODE 0${i+1} (${seatStr}) ${zhuangStr}`;
+                document.getElementById(`label-${i}`).innerHTML = labelTitle;
+            }
+        }
+
+        function updateAuditLogUI() {
+            let tbody = document.getElementById('audit-tbody');
+            tbody.innerHTML = auditLog.map(log => `
+                <tr class="win-log-row">
+                    <td>${log.round}</td>
+                    <td>${log.winner}</td>
+                    <td>${log.source}</td>
+                    <td>${log.tai}</td>
+                    <td>${log.method}</td>
+                </tr>
+            `).join('');
+        }
+
+        function buildDeck() {
+            userDeck = [];
+            aiDeck = [];
+            
+            [...CHARS].forEach(t => { for(let i=0; i<4; i++) userDeck.push(t); });
+            [...DOTS, ...BAMS, ...WINDS, ...DRAGONS].forEach(t => { for(let i=0; i<4; i++) aiDeck.push(t); });
+            
+            let bonuses = [];
+            FLOWERS.forEach(f => bonuses.push(f)); 
+            ANIMALS.forEach(a => bonuses.push(a));
+            for (let i = bonuses.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bonuses[i], bonuses[j]] = [bonuses[j], bonuses[i]];
+            }
+            bonuses.forEach(b => {
+                if (Math.random() < 0.25) userDeck.push(b);
+                else aiDeck.push(b);
+            });
+
+            for (let i = userDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [userDeck[i], userDeck[j]] = [userDeck[j], userDeck[i]];
+            }
+            for (let i = aiDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [aiDeck[i], aiDeck[j]] = [aiDeck[j], aiDeck[i]];
+            }
+        }
+
+        function isBonusTile(tile) { return FLOWERS.includes(tile) || ANIMALS.includes(tile); }
+
+        function drawTile(playerIdx, forceReplacement = false) {
+            let targetDeck = (playerIdx === 0) ? userDeck : aiDeck;
+            if (targetDeck.length === 0) return null;
+            let tile = targetDeck.pop();
+            let wasBonus = false;
+            
+            while (tile && isBonusTile(tile)) {
+                wasBonus = true;
+                exposed[playerIdx].push(tile);
+                if (targetDeck.length === 0) return null;
+                tile = targetDeck.pop();
+            }
+            if (tile) {
+                hands[playerIdx].push(tile);
+                document.getElementById('wall-count').innerText = userDeck.length + aiDeck.length;
+                if (playerIdx === 0) { isReplacementDraw = forceReplacement || wasBonus; }
+                return tile;
+            }
+            return null;
+        }
+
+        function showOverlay(htmlContent, targetTile = null, title = "AUTHORIZATION REQUIRED") {
+            let overlay = document.getElementById('action-overlay');
+            let titleEl = document.getElementById('overlay-title');
+            let targetEl = document.getElementById('overlay-target');
+            let buttonsEl = document.getElementById('overlay-buttons');
+            
+            titleEl.innerText = title;
+            if (targetTile) { targetEl.innerHTML = getTileHTML(targetTile); targetEl.style.display = 'block'; } 
+            else { targetEl.innerHTML = ''; targetEl.style.display = 'none'; }
+            
+            buttonsEl.innerHTML = htmlContent;
+            overlay.style.display = 'flex';
+        }
+
+        function hideOverlay() { 
+            document.getElementById('action-overlay').style.display = 'none'; 
+            document.getElementById('overlay-buttons').innerHTML = ''; 
+        }
+
+        function initRound() {
+            clearTimeout(turnTimer);
+            hands = { 0: [], 1: [], 2: [], 3: [] }; exposed = { 0: [], 1: [], 2: [], 3: [] };
+            turn = dealer; pendingHuResult = null; lastDiscardedTile = null;
+            isReplacementDraw = false; totalDiscardsThisRound = 0; discardsByPlayer = [0,0,0,0];
+            missedHuCount = 0;
+            
+            updateLedgerUI();
+            document.getElementById('discard').innerHTML = '<div class="discard-title">LIQUIDATED ASSETS<br>POOL</div>';
+            
+            buildDeck();
+            hideOverlay();
+            for(let i=0; i<13; i++) { for(let p=0; p<4; p++) drawTile(p); }
+            drawTile(dealer); 
+            hands[0].sort();
+            
+            gameState = 'PLAY';
+            renderAll();
+            if (turn === 0) startHumanTurn(); else doAiTurn();
+        }
+
+        function forceHuCheck() {
+            if (gameState !== 'PLAY') return;
+            clearTimeout(turnTimer);
+            hideOverlay();
+
+            let evalHand = [...hands[0]];
+            let flags = { isReplacementDraw: isReplacementDraw, isTianHu: dealer === 0 && totalDiscardsThisRound === 0, isDiHu: totalDiscardsThisRound === 1 && dealer !== 0, isRenHu: dealer !== 0 && discardsByPlayer[0] === 0 };
+            let wTile = null;
+            let isZiMo = false;
+            let shooter = null;
+
+            if (hands[0].length === 14) {
+                wTile = hands[0][hands[0].length - 1];
+                isZiMo = true;
+            } else if (hands[0].length === 13) {
+                if (lastDiscardedTile && currentDiscarder !== 0 && currentDiscarder !== null) {
+                    wTile = lastDiscardedTile;
+                    evalHand.push(wTile);
+                    shooter = currentDiscarder;
+                } else {
+                    zhaHu(); return;
+                }
+            } else {
+                zhaHu(); return;
+            }
+
+            let huResult = evaluator.evaluate(evalHand, exposed[0], isZiMo, getSeatWind(0), roundWind, wTile, flags);
+
+            let requiredTai = isZiMo ? 1 : 2;
+            if (huResult.isHu && huResult.tai >= requiredTai) {
+                if (!isZiMo && missedHuCount > 0) missedHuCount--; // Revert if intercept caught
+                pendingHuResult = huResult;
+                triggerWin(0, shooter);
+            } else {
+                zhaHu();
+            }
+        }
+
+        function zhaHu() {
+            chips[0] -= 200;
+            updateLedgerUI();
+            if (chips[0] <= 0) {
+                alert("U SUCK, LOSER, NOOB!!!!");
+                chips = [300, 300, 300, 300];
+                dealer = 0; roundWind = 0;
+                initRound();
+            } else {
+                alert("FALSE ALARM (ZHA HU)! -200 CHIPS PENALTY APPLIED!");
+                auditLog.unshift({
+                    round: getWindName(roundWind),
+                    winner: "PENALTY",
+                    source: "NODE 01",
+                    tai: "-",
+                    method: "ZHA HU (-200 UNITS)"
+                });
+                if (auditLog.length > 6) auditLog.pop();
+                updateAuditLogUI();
+                
+                dealer = (dealer + 1) % 4;
+                if (dealer === 0) roundWind = (roundWind + 1) % 4;
+                initRound();
+            }
+        }
+
+        function triggerWin(winnerIndex, shooterIndex = null) {
+            clearTimeout(turnTimer); 
+            hideOverlay();
+            if (!pendingHuResult) return;
+            let isZiMo = (shooterIndex === null);
+            let t = pendingHuResult.tai;
+            
+            let payout = 0; let base = 0;
+            if (isZiMo) {
+                if(t===1) base = 4; else if(t===2) base = 5; else if(t===3) base = 7; else if(t===4) base = 12; else if(t>=5) base = 22;
+                payout = base * 3;
+                for(let i=0; i<4; i++) { if(i!==winnerIndex) chips[i] -= base; }
+                chips[winnerIndex] += payout;
+            } else {
+                if(t===2) payout = 7; else if(t===3) payout = 11; else if(t===4) payout = 20; else if(t>=5) payout = 40;
+                chips[shooterIndex] -= payout;
+                chips[winnerIndex] += payout;
+            }
+            
+            let penalty = missedHuCount * 20;
+            if (penalty > 0) chips[0] -= penalty;
+
+            let winnerName = winnerIndex === 0 ? "NODE 01 (YOU)" : `NODE 0${winnerIndex+1}`;
+            let sourceName = isZiMo ? "INTERNAL (SELF-DRAW)" : (shooterIndex === 0 ? "NODE 01 (YOU)" : `NODE 0${shooterIndex+1}`);
+            let summaryLines = pendingHuResult.breakdown.split('\n').filter(l=>l.includes('> '));
+            let methodStr = summaryLines.length > 0 ? summaryLines[0].replace('> ', '') : "Reconciliation";
+            
+            auditLog.unshift({
+                round: getWindName(roundWind),
+                winner: winnerName,
+                source: sourceName,
+                tai: pendingHuResult.tai,
+                method: methodStr
+            });
+            if (auditLog.length > 6) auditLog.pop();
+            updateAuditLogUI();
+
+            if (winnerIndex !== dealer) {
+                dealer = (dealer + 1) % 4;
+                if (dealer === 0) roundWind = (roundWind + 1) % 4;
+            }
+            updateLedgerUI();
+
+            let logHtml = `<div class="terminal-log">
+                > RECONCILIATION CERTIFIED<br>
+                > BENEFICIARY: NODE 0${winnerIndex+1}<br>
+                > SOURCE: ${isZiMo ? 'INTERNAL ASSET (SELF-DRAW)' : `NODE 0${shooterIndex+1} (INTERCEPT)`}<br><br>
+                ${pendingHuResult.breakdown.replace(/\n/g, '<br>')}<br><br>
+                > NET TRANSFER: ${payout} UNITS
+            `;
+            if (penalty > 0) logHtml += `<br><br>> NEGLIGENCE PENALTY: ${missedHuCount} MISSED AUDITS (-${penalty} UNITS)`;
+            logHtml += `</div>`;
+
+            document.getElementById('status').innerText = `ALERT: Node 0${winnerIndex+1} Has Reconciled the Ledger!`;
+            showOverlay(`${logHtml}<button class="btn-hu" onclick="nextRoundCheck()">ACKNOWLEDGE & COMMENCE NEXT AUDIT CYCLE</button>`, null, "AUDIT RESOLUTION REPORT");
+        }
+
+        function triggerDraw() {
+            clearTimeout(turnTimer);
+            hideOverlay();
+            
+            let penalty = missedHuCount * 20;
+            if (penalty > 0) chips[0] -= penalty;
+            
+            auditLog.unshift({
+                round: getWindName(roundWind),
+                winner: "N/A",
+                source: "N/A",
+                tai: "-",
+                method: "DRAW (LEDGER DEPLETED)"
+            });
+            if (auditLog.length > 6) auditLog.pop();
+            updateAuditLogUI();
+
+            dealer = (dealer + 1) % 4;
+            if (dealer === 0) roundWind = (roundWind + 1) % 4;
+            updateLedgerUI();
+            
+            let logHtml = `<div class="terminal-log">> AUDIT CONCLUDED<br>> RESULT: NO RESOLUTION FOUND<br>> LEDGER DEPLETED<br>> NEXT AUDITOR: NODE 0${dealer+1}`;
+            if (penalty > 0) logHtml += `<br><br>> NEGLIGENCE PENALTY: ${missedHuCount} MISSED AUDITS (-${penalty} UNITS)`;
+            logHtml += `</div>`;
+
+            document.getElementById('status').innerText = "AUDIT CONCLUDED: Draw Game (Empty Ledger).";
+            showOverlay(`${logHtml}<button class="btn-hu" onclick="nextRoundCheck()">ACKNOWLEDGE & COMMENCE NEXT AUDIT CYCLE</button>`, null, "AUDIT RESOLUTION REPORT");
+        }
+
+        function nextRoundCheck() {
+            hideOverlay();
+            if (chips[0] <= 0) {
+                alert("U SUCK, LOSER, NOOB!!!!");
+                chips = [300, 300, 300, 300];
+                dealer = 0; roundWind = 0;
+            }
+            initRound();
+        }
+
+        function getTileHTML(char, isExposed = false, isDiscard = false) {
+            let extraClass = ''; let content = char;
+            if (char === '中') { extraClass = 'tile-red'; }
+            else if (char === '發') { extraClass = 'tile-green'; }
+            else if (char === '白') { content = '<div class="bai-ban"></div>'; }
+            
+            let fNum = '';
+            if (['🀢', '🀦'].includes(char)) fNum = '1';
+            if (['🀣', '🀧'].includes(char)) fNum = '2';
+            if (['🀤', '🀨'].includes(char)) fNum = '3';
+            if (['🀥', '🀩'].includes(char)) fNum = '4';
+            
+            if (fNum) content = `<div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">${char}<span class="flower-num">${fNum}</span></div>`;
+
+            if (isBonusTile(char) && isExposed) { extraClass = ''; } 
+            return `<div class="tile ${extraClass}">${content}</div>`;
+        }
+
+        function renderMeldHtml(meldString) {
+            let cleanString = meldString.replace(/\*/g, '');
+            let isAnKong = meldString.includes('*');
+            
+            if(isAnKong && meldString.length > 4) { 
+               return `<div class="meld">
+                    <div class="tile facedown"></div><div class="tile facedown"></div>
+                    <div class="tile facedown"></div><div class="tile facedown"></div>
+               </div>`;
+            }
+
+            let tilesHtml = Array.from(cleanString).map(char => getTileHTML(char, true)).join('');
+            return `<div class="meld">${tilesHtml}</div>`;
+        }
+
+        function renderAll() {
+            for(let i=1; i<=3; i++) {
+                document.getElementById(`hand-${i}`).innerHTML = hands[i].map(() => `<div class="tile facedown"></div>`).join('');
+                document.getElementById(`exposed-${i}`).innerHTML = exposed[i].map(renderMeldHtml).join('');
+            }
+
+            const humanHand = document.getElementById('hand-0');
+            humanHand.innerHTML = '';
+            let isHoldingDrawnTile = (hands[0].length % 3 === 2); 
+
+            hands[0].forEach((tile, index) => {
+                let divStr = getTileHTML(tile);
+                let tempDiv = document.createElement('div');
+                tempDiv.innerHTML = divStr;
+                let actualDiv = tempDiv.firstChild;
+                
+                if (isHoldingDrawnTile && index === hands[0].length - 1 && gameState === 'PLAY') actualDiv.classList.add('drawn-tile');
+                
+                actualDiv.onclick = () => {
+                    playTile(index);
+                };
+                humanHand.appendChild(actualDiv);
+            });
+            document.getElementById('exposed-0').innerHTML = exposed[0].map(renderMeldHtml).join('');
+        }
+
+        function startHumanTurn() {
+            hideOverlay();
+            isHumanTurn = true;
+            document.getElementById('status').innerText = "AUDIT REQUIRED: AWAITING DISPOSAL OR ACTION.";
+            
+            let counts = {};
+            hands[0].forEach(t => counts[t] = (counts[t] || 0) + 1);
+            let possibleKongs = [];
+            Object.keys(counts).forEach(t => { if (counts[t] === 4) possibleKongs.push({type: 'an', tile: t}); });
+            hands[0].forEach(t => { if (exposed[0].includes(t+t+t)) possibleKongs.push({type: 'ming', tile: t}); });
+
+            let overlayHtml = '';
+            if (possibleKongs.length > 0) {
+                let k = possibleKongs[0];
+                overlayHtml += `<button onclick="executeSelfKong('${k.type}', '${k.tile}')">CONSOLIDATE BLOCK (KONG)</button>`;
+            }
+
+            if (overlayHtml !== '') {
+                overlayHtml += `<button class="cancel-btn" onclick="hideOverlay()">DECLINE INTERVENTION</button>`;
+                showOverlay(overlayHtml, null, "INTERNAL AUDIT ACTION REQUIRED");
+            }
+            renderAll();
+        }
+
+        function executeSelfKong(type, tile) {
+            hideOverlay();
+            if (type === 'an') {
+                for(let i=0; i<4; i++) hands[0].splice(hands[0].indexOf(tile), 1);
+                exposed[0].push(tile+tile+tile+tile+'*');
+            } else {
+                hands[0].splice(hands[0].indexOf(tile), 1);
+                exposed[0][exposed[0].indexOf(tile+tile+tile)] = tile+tile+tile+tile;
+            }
+            document.getElementById('status').innerText = "LOG: Block Consolidated. Sourcing replacement asset...";
+            
+            let drawn = drawTile(0, true);
+            if (!drawn) { triggerDraw(); return; }
+            
+            renderAll();
+            startHumanTurn(); 
+        }
+
+        function playTile(index) {
+            if (!isHumanTurn || gameState !== 'PLAY') return;
+
+            // Missed Zi Mo Check Before Discarding
+            let tempHand = [...hands[0]];
+            let wTile = tempHand[tempHand.length - 1]; 
+            let flags = { isReplacementDraw: isReplacementDraw, isTianHu: dealer === 0 && totalDiscardsThisRound === 0, isDiHu: false, isRenHu: dealer !== 0 && discardsByPlayer[0] === 0 };
+            let huRes = evaluator.evaluate(tempHand, exposed[0], true, getSeatWind(0), roundWind, wTile, flags);
+            if (huRes.isHu && huRes.tai >= 1) {
+                missedHuCount++;
+            }
+
+            isHumanTurn = false;
+            isReplacementDraw = false;
+            hideOverlay();
+            const discarded = hands[0].splice(index, 1)[0];
+            discardsByPlayer[0]++;
+            totalDiscardsThisRound++;
+            
+            lastDiscardedTile = discarded;
+            currentDiscarder = 0;
+
+            let tempDiv = document.createElement('div');
+            tempDiv.innerHTML = getTileHTML(discarded, false, true);
+            document.getElementById('discard').appendChild(tempDiv.firstChild);
+            
+            hands[0].sort();
+            renderAll();
+            processClaims(discarded, 0); 
+        }
+
+        function getAiDiscard(aiIndex) {
+            let h = hands[aiIndex];
+            let valid = h.map((t, idx) => ({t, idx}));
+            if(valid.length === 0) return 0; 
+            return valid[Math.floor(Math.random() * valid.length)].idx; 
+        }
+
+        function doAiTurn() {
+            if (aiDeck.length === 0 || userDeck.length === 0) { triggerDraw(); return; }
+            document.getElementById('status').innerText = `PROCESSING: NODE 0${turn+1} EVALUATING INVENTORY...`;
+            
+            let drawn = drawTile(turn);
+            if (!drawn) { triggerDraw(); return; }
+            renderAll();
+
+            setTimeout(() => {
+                let h = hands[turn];
+                let valid = h.map((t, idx) => ({t, idx}));
+                let discardIdx = valid.length > 0 ? valid[0].idx : 0;
+                
+                const discarded = hands[turn].splice(discardIdx, 1)[0];
+                discardsByPlayer[turn]++;
+                totalDiscardsThisRound++;
+                
+                lastDiscardedTile = discarded;
+                currentDiscarder = turn;
+
+                let tempDiv = document.createElement('div');
+                tempDiv.innerHTML = getTileHTML(discarded, false, true);
+                document.getElementById('discard').appendChild(tempDiv.firstChild);
+                
+                renderAll();
+                processClaims(discarded, turn); 
+            }, 15); // HYPER-VELOCITY AI
+        }
+
+        function getAllChiOptions(hand, tile) {
+            let options = [];
+            let allSuits = [DOTS, BAMS, CHARS];
+            for (let suit of allSuits) {
+                let idx = suit.indexOf(tile);
+                if (idx !== -1) {
+                    if (idx >= 2 && hand.includes(suit[idx-2]) && hand.includes(suit[idx-1])) options.push([suit[idx-2], suit[idx-1]]);
+                    if (idx >= 1 && idx <= 7 && hand.includes(suit[idx-1]) && hand.includes(suit[idx+1])) options.push([suit[idx-1], suit[idx+1]]);
+                    if (idx <= 6 && hand.includes(suit[idx+1]) && hand.includes(suit[idx+2])) options.push([suit[idx+1], suit[idx+2]]);
+                }
+            }
+            return options;
+        }
+
+        function processClaims(discardedTile, discardingPlayer) {
+            clearTimeout(turnTimer);
+            currentDiscarder = discardingPlayer;
+            hideOverlay();
+
+            if (discardingPlayer !== 0) {
+                
+                // Track Missed Discard Hus
+                let tempHand = [...hands[0], discardedTile];
+                let flags = { isReplacementDraw: false, isTianHu: false, isDiHu: totalDiscardsThisRound === 1 && dealer === discardingPlayer, isRenHu: false };
+                let huRes = evaluator.evaluate(tempHand, exposed[0], false, getSeatWind(0), roundWind, discardedTile, flags); 
+                if (huRes.isHu && huRes.tai >= 2) {
+                    missedHuCount++;
+                }
+
+                let overlayHtml = '';
+                let canClaim = false;
+
+                if (hands[0].filter(t => t === discardedTile).length === 3) {
+                    let kongStr = discardedTile + discardedTile + discardedTile + discardedTile;
+                    let visualTiles = Array.from(kongStr).map(c => getTileHTML(c)).join('');
+                    overlayHtml += `<button onclick="executeHumanClaim('kong', '${discardedTile}')">CONSOLIDATE KONG:<br><div style="display:flex; gap:2px; margin-top:5px;">${visualTiles}</div></button>`;
+                    canClaim = true;
+                }
+
+                if (hands[0].filter(t => t === discardedTile).length >= 2) {
+                    let pongStr = discardedTile + discardedTile + discardedTile;
+                    let visualTiles = Array.from(pongStr).map(c => getTileHTML(c)).join('');
+                    overlayHtml += `<button onclick="executeHumanClaim('pong', '${discardedTile}')">AGGREGATE PONG:<br><div style="display:flex; gap:2px; margin-top:5px;">${visualTiles}</div></button>`;
+                    canClaim = true;
+                }
+
+                if (discardingPlayer === 3) {
+                    let chiOptions = getAllChiOptions(hands[0], discardedTile);
+                    if (chiOptions.length > 0) {
+                        let suit = [DOTS, BAMS, CHARS].find(s => s.includes(discardedTile));
+                        chiOptions.forEach((opt) => {
+                            let meldArr = [opt[0], discardedTile, opt[1]];
+                            meldArr.sort((a,b) => suit.indexOf(a) - suit.indexOf(b));
+                            let visualTiles = meldArr.map(c => getTileHTML(c)).join('');
+                            overlayHtml += `<button onclick="executeHumanChi('${discardedTile}', '${opt[0]}', '${opt[1]}')">AUTHORIZE CHI:<br><div style="display:flex; gap:2px; margin-top:5px;">${visualTiles}</div></button>`;
+                        });
+                        canClaim = true;
+                    }
+                }
+
+                if (canClaim) {
+                    overlayHtml += `</div><button class="cancel-btn" onclick="cancelSelection()">DECLINE INTERVENTION</button>`;
+                    document.getElementById('status').innerText = "ACTION WINDOW: AWAITING INTERCEPT OR MANUAL AUDIT.";
+                    showOverlay(overlayHtml, discardedTile, "ASSET INTERCEPT: ACTION REQUIRED");
+                    return; // Infinite time for user to react if an overlay exists
+                } else {
+                    // No valid Chi/Pong, skip user instantly (no timer)
+                    finishTurn(discardingPlayer);
+                    return;
+                }
+            }
+            finishTurn(discardingPlayer);
+        }
+
+        function cancelSelection() {
+            clearTimeout(turnTimer);
+            hideOverlay();
+            finishTurn(currentDiscarder);
+        }
+
+        function executeHumanClaim(type, tile) {
+            clearTimeout(turnTimer);
+            hideOverlay();
+            let dp = document.getElementById('discard'); if(dp.lastChild) dp.removeChild(dp.lastChild);
+
+            if (type === 'pong') {
+                for(let k=0; k<2; k++) hands[0].splice(hands[0].indexOf(tile), 1);
+                exposed[0].push(tile+tile+tile);
+                renderAll();
+                turn = 0; 
+                isHumanTurn = true;
+                document.getElementById('status').innerText = `LOG: PONG PROCESSED. AWAITING DISPOSAL.`;
+            } else if (type === 'kong') {
+                for(let k=0; k<3; k++) hands[0].splice(hands[0].indexOf(tile), 1);
+                exposed[0].push(tile+tile+tile+tile);
+                
+                let drawn = drawTile(0, true); 
+                if (!drawn) { triggerDraw(); return; }
+                
+                renderAll();
+                startHumanTurn(); 
+            }
+        }
+
+        function executeHumanChi(tile, use1, use2) {
+            clearTimeout(turnTimer);
+            hideOverlay();
+            let dp = document.getElementById('discard'); if(dp.lastChild) dp.removeChild(dp.lastChild);
+
+            hands[0].splice(hands[0].indexOf(use1), 1);
+            hands[0].splice(hands[0].indexOf(use2), 1);
+            
+            let suit = [DOTS, BAMS, CHARS].find(s => s.includes(tile));
+            let meldArr = [use1, tile, use2];
+            meldArr.sort((a,b) => suit.indexOf(a) - suit.indexOf(b));
+            exposed[0].push(meldArr.join(''));
+            
+            renderAll();
+            turn = 0; 
+            isHumanTurn = true;
+            document.getElementById('status').innerText = `LOG: SEQUENCE AUTHORIZED. AWAITING DISPOSAL.`;
+        }
+
+        function finishTurn(currentPlayer) {
+            if (userDeck.length === 0 || aiDeck.length === 0) { triggerDraw(); return; }
+            
+            turn = (currentPlayer + 1) % 4;
+            if (turn === 0) { 
+                isReplacementDraw = false;
+                let drawn = drawTile(0); 
+                if (!drawn) { triggerDraw(); return; }
+                startHumanTurn(); 
+            } 
+            else doAiTurn();
+        }
+
+        initRound();
+    </script>
+</body>
+</html>
