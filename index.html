@@ -105,8 +105,8 @@
         
         /* THE EMERGENCY HU BUTTON */
         #emergency-hu-btn {
-            background-color: #d32f2f; color: #fff; border: 3px solid #b71c1c; padding: 12px 30px;
-            font-weight: 900; cursor: pointer; border-radius: 4px; margin-bottom: 8px; font-size: 15px; letter-spacing: 3px;
+            background-color: #d32f2f; color: #fff; border: 3px solid #b71c1c; padding: 12px 20px;
+            font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 13px; letter-spacing: 2px;
             box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); transition: 0.1s; z-index: 100000; position: relative; font-family: "Courier New", Courier, monospace;
         }
         #emergency-hu-btn:hover { background-color: #f44336; transform: scale(1.02) translateY(-2px); box-shadow: 0 8px 20px rgba(211, 47, 47, 0.6);}
@@ -304,7 +304,7 @@
 
     <div id="disclaimer">
         <strong>REGULATORY NOTICE (SEC. 42):</strong> The following matrix represents live asset reconciliation. Authorized entities must declare structural sequences (AUTHORIZE EAT), aggregate identical assets (EXECUTE PONG/KONG), and file immediate compliance reports upon discovering a fully reconciled ledger (EMERGENCY AUDIT). The value metric (TAI) evaluates asset purity, prevailing variables, and structural integrity.<br><br>
-        <span style="color: #c62828;"><strong>>> HYPER-VELOCITY TRAINING MODE ENABLED:</strong> User deck restricted exclusively to Characters (Wan) to facilitate isolated pattern reading. AI Nodes simulate market environment via disconnected asset pools with instant processing speeds. <strong>Zha Hu Penalty (-200 Units) and Negligence Penalty (-20 Units per Missed Audit) Active. System will NOT prompt for Audit Certification.</strong></span>
+        <span style="color: #c62828;"><strong>>> PURE WAN ZI TRAINING PROTOCOL ACTIVE:</strong> Fei and Da Pai have been purged from the asset pool. Node 01 (You) will strictly draw Character Assets (Wan Zi) to facilitate intensive structural reading practice. AI Nodes simulate market environment with remaining mixed assets. <strong>Zha Hu Penalty (-200 Units) and Negligence Penalty (-20 Units per Missed Audit) Active.</strong></span>
     </div>
 
     <div id="ledger-board">
@@ -320,7 +320,7 @@
     <div id="dashboard-controls">
         <div class="status-box">
             <div id="status">INITIALIZING SECURE LEDGER...</div>
-            <div class="meta-data">Unallocated Assets in Vault: <span id="wall-count">148</span></div>
+            <div class="meta-data">Unallocated Assets in Vault: <span id="wall-count">120</span></div>
         </div>
     </div>
 
@@ -359,7 +359,11 @@
                 <div class="frame-header" id="label-0" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 15px;">
                     <span>NODE 01: LEAD AUDITOR (EAST) - SECURE TERMINAL</span>
                 </div>
-                <button id="emergency-hu-btn" onclick="forceHuCheck()">EMERGENCY AUDIT (HU)</button>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px; justify-content: center; width: 95%; flex-wrap: wrap;">
+                    <button id="emergency-hu-btn" onclick="forceHuCheck()" style="margin-bottom: 0; flex-grow: 1;">EMERGENCY AUDIT</button>
+                    <button id="scan-wait-btn" onclick="scanWaitProjections()" style="background-color: #0b1f3f; color: #b5985a; border: 3px solid #b5985a; font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 13px; letter-spacing: 1px; font-family: 'Courier New', Courier, monospace; flex-grow: 1; transition: 0.2s;">PROJECTIONS</button>
+                    <button id="discard-assist-btn" onclick="showDiscardAssist()" style="background-color: #1b5e20; color: #fff; border: 3px solid #4caf50; font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 13px; letter-spacing: 1px; font-family: 'Courier New', Courier, monospace; flex-grow: 1; transition: 0.2s;">DISCARD ASSIST</button>
+                </div>
                 <div class="exposed" id="exposed-0"></div><div class="hand" id="hand-0"></div>
             </div>
 
@@ -392,7 +396,6 @@
         // --- 1. SUPERCHARGED EVALUATOR ---
         class MahjongEvaluator {
             constructor() {
-                // FEI IS REMOVED
                 this.FEI = '飛'; 
                 this.FLOWERS = ['🀢','🀣','🀤','🀥', '🀦','🀧','🀨','🀩']; 
                 this.ANIMALS = ['🐱','🐭','🐓','🐛']; 
@@ -405,22 +408,46 @@
                 };
             }
 
-            checkStructure(hand14) {
-                let feiCount = 0;
-                let natHand = hand14.map(t => this.TILE_MAP[t] || t);
+            checkStructure(concealedHand, exposedRaw) {
+                let feiCount = concealedHand.filter(t => t === this.FEI).length;
+                let natHand = concealedHand.filter(t => t !== this.FEI).map(t => this.TILE_MAP[t] || t);
                 
+                // We only temporarily pool all tiles to check for special conditions like Big 3 Dragons
+                let allTiles = [...natHand];
+                exposedRaw.forEach(m => {
+                    let clean = m.replace(/\*/g, '');
+                    let firstChar = Array.from(clean)[0];
+                    if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar) && firstChar !== this.FEI) {
+                        let mTiles = Array.from(clean);
+                        let isPong = mTiles.length > 0 && mTiles.every(c => c === mTiles[0]);
+                        if (mTiles.length >= 3 && isPong) mTiles = mTiles.slice(0, 3); 
+                        allTiles.push(...mTiles.map(c => this.TILE_MAP[c] || c));
+                    }
+                });
+
                 let counts = {};
-                natHand.forEach(t => counts[t] = (counts[t] || 0) + 1);
+                allTiles.forEach(t => counts[t] = (counts[t] || 0) + 1);
                 
                 let reqDaSan = Math.max(0, 3-(counts['H5']||0)) + Math.max(0, 3-(counts['H6']||0)) + Math.max(0, 3-(counts['H7']||0));
                 if (reqDaSan <= feiCount) return true;
 
-                if (hand14.length === 14) {
+                let exposedValidCount = exposedRaw.filter(m => {
+                    let clean = m.replace(/\*/g, '');
+                    let firstChar = Array.from(clean)[0];
+                    return firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar) && firstChar !== this.FEI;
+                }).length;
+
+                let effectiveLength = concealedHand.length + (exposedValidCount * 3);
+
+                if (effectiveLength === 14 && concealedHand.length === 14) {
                     if (this.is13Orphans(natHand, feiCount)) return true;
                     if (this.isNineGates(natHand, feiCount)) return true;
                     if (this.isSevenPairs(natHand, feiCount)) return true;
                 }
+                
+                // For standard Hu, strictly evaluate ONLY the concealed tiles
                 if (this.isStandardHu(natHand, feiCount).length > 0) return true;
+                
                 return false;
             }
 
@@ -429,19 +456,7 @@
                 let waits = [];
                 for (let t of uniqueTiles) {
                     let testHand = [...hand13, t];
-                    let fake14 = [...testHand];
-                    exposedRaw.forEach(m => {
-                        let clean = m.replace(/\*/g, '');
-                        // Strip bonus tiles from structure check
-                        let firstChar = Array.from(clean)[0];
-                        if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar)) {
-                            let isPong = clean.length > 0 && Array.from(clean).every(c => c === clean[0]);
-                            let mTiles = Array.from(clean);
-                            if (mTiles.length >= 3 && isPong) mTiles = mTiles.slice(0, 3); 
-                            fake14.push(...mTiles);
-                        }
-                    });
-                    if (this.checkStructure(fake14)) waits.push(t);
+                    if (this.checkStructure(testHand, exposedRaw)) waits.push(t);
                 }
                 return waits;
             }
@@ -464,8 +479,8 @@
             }
 
             _evaluateCore(hand, exposedRaw, isZiMo, seatWind, roundWind, winningTile, gameFlags) {
-                let feiCount = 0;
-                let natHand = hand.map(t => this.TILE_MAP[t] || t);
+                let feiCount = hand.filter(t => t === this.FEI).length;
+                let natHand = hand.filter(t => t !== this.FEI).map(t => this.TILE_MAP[t] || t);
                 
                 let natExposedSets = [];
                 let exposedTriplets = 0;
@@ -490,7 +505,7 @@
 
                     // Only process actual melds
                     let firstChar = Array.from(clean)[0];
-                    if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar)) {
+                    if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar) && firstChar !== this.FEI) {
                         let mTiles = Array.from(clean);
                         let isPong = mTiles.length > 0 && mTiles.every(c => c === mTiles[0]);
                         
@@ -780,7 +795,7 @@
         const FLOWERS = ['🀢','🀣','🀤','🀥', '🀦','🀧','🀨','🀩']; 
         const ANIMALS = ['🐱','🐭','🐓','🐛'];
 
-        let userDeck = []; let aiDeck = [];
+        let mainDeck = [];
         let hands = { 0: [], 1: [], 2: [], 3: [] }; let exposed = { 0: [], 1: [], 2: [], 3: [] };
         let turn = 0; let isHumanTurn = false; let turnTimer; let currentDiscarder = null;
 
@@ -805,7 +820,7 @@
             return exposed[playerIdx].filter(m => {
                 let clean = m.replace(/\*/g, '');
                 let firstChar = Array.from(clean)[0];
-                return firstChar && !FLOWERS.includes(firstChar) && !ANIMALS.includes(firstChar);
+                return firstChar && !FLOWERS.includes(firstChar) && !ANIMALS.includes(firstChar) && firstChar !== '飛';
             }).length;
         }
 
@@ -839,49 +854,56 @@
         }
 
         function buildDeck() {
-            userDeck = [];
-            aiDeck = [];
+            mainDeck = [];
             
-            [...CHARS].forEach(t => { for(let i=0; i<4; i++) userDeck.push(t); });
-            [...DOTS, ...BAMS, ...WINDS, ...DRAGONS].forEach(t => { for(let i=0; i<4; i++) aiDeck.push(t); });
-            
-            let bonuses = [];
-            FLOWERS.forEach(f => bonuses.push(f)); 
-            ANIMALS.forEach(a => bonuses.push(a));
-            for (let i = bonuses.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [bonuses[i], bonuses[j]] = [bonuses[j], bonuses[i]];
-            }
-            bonuses.forEach(b => {
-                if (Math.random() < 0.25) userDeck.push(b);
-                else aiDeck.push(b);
+            // Generate standard tiles MINUS Da Pai (Winds/Dragons)
+            [...CHARS, ...DOTS, ...BAMS].forEach(t => { 
+                for(let i=0; i<4; i++) mainDeck.push(t); 
             });
+            
+            // Add Bonuses
+            FLOWERS.forEach(f => mainDeck.push(f)); 
+            ANIMALS.forEach(a => mainDeck.push(a));
 
-            for (let i = userDeck.length - 1; i > 0; i--) {
+            for (let i = mainDeck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [userDeck[i], userDeck[j]] = [userDeck[j], userDeck[i]];
-            }
-            for (let i = aiDeck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [aiDeck[i], aiDeck[j]] = [aiDeck[j], aiDeck[i]];
+                [mainDeck[i], mainDeck[j]] = [mainDeck[j], mainDeck[i]];
             }
         }
 
+        function getNextAllowedTileIndex(playerIdx) {
+            // AI Nodes draw strictly from the top of the wall
+            if (playerIdx !== 0) return mainDeck.length - 1; 
+            
+            // Human Node (Player 0) ONLY draws Character (Wan zi)
+            for (let i = mainDeck.length - 1; i >= 0; i--) {
+                let t = mainDeck[i];
+                if (CHARS.includes(t)) {
+                    return i;
+                }
+            }
+            // Fallback if none left
+            return mainDeck.length - 1; 
+        }
+
         function drawTile(playerIdx, forceReplacement = false) {
-            let targetDeck = (playerIdx === 0) ? userDeck : aiDeck;
-            if (targetDeck.length === 0) return null;
-            let tile = targetDeck.pop();
+            if (mainDeck.length === 0) return null;
+            
+            let tIdx = getNextAllowedTileIndex(playerIdx);
+            let tile = mainDeck.splice(tIdx, 1)[0];
             let wasBonus = false;
             
+            // Bonuses are kept exposed
             while (tile && (FLOWERS.includes(tile) || ANIMALS.includes(tile))) {
                 wasBonus = true;
                 exposed[playerIdx].push(tile);
-                if (targetDeck.length === 0) return null;
-                tile = targetDeck.pop();
+                if (mainDeck.length === 0) return null;
+                tIdx = getNextAllowedTileIndex(playerIdx);
+                tile = mainDeck.splice(tIdx, 1)[0];
             }
             if (tile) {
                 hands[playerIdx].push(tile);
-                document.getElementById('wall-count').innerText = userDeck.length + aiDeck.length;
+                document.getElementById('wall-count').innerText = mainDeck.length;
                 if (playerIdx === 0) { isReplacementDraw = forceReplacement || wasBonus; }
                 hands[playerIdx].sort();
                 return tile;
@@ -1096,6 +1118,7 @@
             if (char === '中') { extraClass = 'tile-red'; }
             else if (char === '發') { extraClass = 'tile-green'; }
             else if (char === '白') { content = '<div class="bai-ban"></div>'; }
+            else if (char === '飛') { content = '<div style="color:#d32f2f; font-weight:bold; font-size:32px;">飛</div>'; extraClass = 'special-text'; }
             
             let fNum = '';
             if (['🀢', '🀦'].includes(char)) fNum = '1';
@@ -1215,15 +1238,8 @@
             processClaims(discarded, 0); 
         }
 
-        function getAiDiscard(aiIndex) {
-            let h = hands[aiIndex];
-            let valid = h.map((t, idx) => ({t, idx}));
-            if(valid.length === 0) return 0; 
-            return valid[Math.floor(Math.random() * valid.length)].idx; 
-        }
-
         function doAiTurn() {
-            if (aiDeck.length === 0 || userDeck.length === 0) { triggerDraw(); return; }
+            if (mainDeck.length === 0) { triggerDraw(); return; }
             document.getElementById('status').innerText = `PROCESSING: NODE 0${turn+1} EVALUATING INVENTORY...`;
             
             let drawn = drawTile(turn);
@@ -1377,7 +1393,7 @@
         }
 
         function finishTurn(currentPlayer) {
-            if (userDeck.length === 0 || aiDeck.length === 0) { triggerDraw(); return; }
+            if (mainDeck.length === 0) { triggerDraw(); return; }
             
             turn = (currentPlayer + 1) % 4;
             if (turn === 0) { 
@@ -1388,6 +1404,98 @@
                 startHumanTurn(); 
             } 
             else doAiTurn();
+        }
+
+        function scanWaitProjections() {
+            let currentHand = [...hands[0]];
+            let isActiveTurn = (currentHand.length % 3 === 2);
+            
+            if (isActiveTurn) {
+                currentHand.pop();
+            }
+
+            let waits = evaluator.getWaitList(currentHand, exposed[0]);
+            
+            let contentHtml = '';
+            
+            if (waits.length === 0) {
+                contentHtml = `
+                    <div class="terminal-log" style="text-align:center; color:#ff5252; border-color: #ff5252; box-shadow: inset 0 0 20px rgba(255,82,82,0.1);">
+                        > NO VALID RECONCILIATION PATHS DETECTED<br>
+                        > ASSET STRUCTURE INCOMPLETE OR FRAGMENTED
+                    </div>`;
+            } else {
+                let visualTiles = waits.map(c => getTileHTML(c)).join('');
+                let disclaimer = isActiveTurn ? "<br>> (PROJECTION EXCLUDES CURRENTLY DRAWN TILE)" : "";
+                contentHtml = `
+                    <div class="terminal-log" style="color: #4fc3f7; border-color: #4fc3f7; box-shadow: inset 0 0 20px rgba(79,195,247,0.1);">
+                        > TARGET ASSETS REQUIRED FOR IMMEDIATE RECONCILIATION${disclaimer}
+                    </div>
+                    <div style="display:flex; gap:8px; justify-content:center; margin: 20px 0; flex-wrap: wrap; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 4px;">
+                        ${visualTiles}
+                    </div>
+                `;
+            }
+            
+            contentHtml += `<button class="cancel-btn" onclick="hideOverlay()">CLOSE TERMINAL</button>`;
+            
+            showOverlay(contentHtml, null, "LIVE WAIT PROJECTIONS (TING)");
+        }
+
+        function showDiscardAssist() {
+            let currentHand = [...hands[0]];
+            let isActiveTurn = (currentHand.length % 3 === 2);
+            
+            if (!isActiveTurn) {
+                showOverlay(`<div class="terminal-log" style="color:#ff5252; text-align:center;">> ACTION DENIED: ASSIST ONLY AVAILABLE DURING YOUR TURN TO DISCARD.</div><button class="cancel-btn" onclick="hideOverlay()">CLOSE</button>`, null, "DISCARD ANALYZER");
+                return;
+            }
+
+            // Exclude Fei from discard suggestions entirely
+            let uniqueTiles = [...new Set(currentHand)].filter(t => t !== '飛');
+            let assistHtml = '';
+            let results = [];
+            
+            uniqueTiles.forEach(discardCandidate => {
+                let simHand = [...currentHand];
+                simHand.splice(simHand.indexOf(discardCandidate), 1); 
+                
+                let waits = evaluator.getWaitList(simHand, exposed[0]);
+                if (waits.length > 0) {
+                    results.push({ discard: discardCandidate, waits: waits });
+                }
+            });
+
+            if (results.length === 0) {
+                assistHtml = `<div class="terminal-log" style="text-align:center; color:#ff5252; border-color:#ff5252; box-shadow: inset 0 0 20px rgba(255,82,82,0.1);">> NO VIABLE DISCARDS DETECTED THAT LEAD TO IMMEDIATE RECONCILIATION (TING).</div>`;
+            } else {
+                results.sort((a, b) => b.waits.length - a.waits.length);
+                
+                assistHtml += `<div class="terminal-log" style="color: #4fc3f7; max-height: 50vh; overflow-y: auto; border-color:#4fc3f7; box-shadow: inset 0 0 20px rgba(79,195,247,0.1);">`;
+                assistHtml += `> DISCARD ANALYSIS COMPLETE. OPTIMAL ROUTES FOUND:<br><br>`;
+                
+                results.forEach(res => {
+                    let discardTileHtml = getTileHTML(res.discard);
+                    let waitTilesHtml = res.waits.map(w => getTileHTML(w)).join('');
+                    assistHtml += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: rgba(255,255,255,0.1); padding: 8px; border-left: 4px solid #4caf50;">
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 60px;">
+                                <span style="font-size:10px; margin-bottom:4px; color:#fff;">DISCARD</span>
+                                ${discardTileHtml}
+                            </div>
+                            <div style="color: #fff; font-size: 20px; padding: 0 10px;"> ➔ </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; flex-grow: 1; justify-content: flex-start; padding-left: 10px;">
+                                <span style="font-size:10px; margin-bottom:4px; color:#fff; width: 100%;">WAITING FOR (${res.waits.length} TILES)</span>
+                                ${waitTilesHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                assistHtml += `</div>`;
+            }
+            
+            assistHtml += `<button class="cancel-btn" onclick="hideOverlay()">CLOSE TERMINAL</button>`;
+            showOverlay(assistHtml, null, "DISCARD ASSIST (TING ANALYSIS)");
         }
 
         initRound();
