@@ -202,8 +202,6 @@
         #audit-table td { padding: 12px; border: 1px solid #ccc; color: #111; font-weight: bold;}
         #audit-table tr:nth-child(even) { background-color: #f0f4f8; }
 
-        #mas-footer { width: 98vw; max-width: 1400px; text-align: center; color: #546e7a; font-size: 11px; border-top: 2px solid #b0bec5; padding-top: 15px; font-family: Arial, sans-serif; margin-bottom: 20px; font-weight: bold;}
-
         /* MOBILE OPTIMIZATION */
         @media screen and (max-width: 1000px) {
             body { padding: 0; }
@@ -412,7 +410,6 @@
                 let feiCount = concealedHand.filter(t => t === this.FEI).length;
                 let natHand = concealedHand.filter(t => t !== this.FEI).map(t => this.TILE_MAP[t] || t);
                 
-                // We only temporarily pool all tiles to check for special conditions like Big 3 Dragons
                 let allTiles = [...natHand];
                 exposedRaw.forEach(m => {
                     let clean = m.replace(/\*/g, '');
@@ -445,7 +442,6 @@
                     if (this.isSevenPairs(natHand, feiCount)) return true;
                 }
                 
-                // For standard Hu, strictly evaluate ONLY the concealed tiles
                 if (this.isStandardHu(natHand, feiCount).length > 0) return true;
                 
                 return false;
@@ -503,7 +499,6 @@
                         }
                     });
 
-                    // Only process actual melds
                     let firstChar = Array.from(clean)[0];
                     if (firstChar && !this.FLOWERS.includes(firstChar) && !this.ANIMALS.includes(firstChar) && firstChar !== this.FEI) {
                         let mTiles = Array.from(clean);
@@ -798,6 +793,7 @@
         let mainDeck = [];
         let hands = { 0: [], 1: [], 2: [], 3: [] }; let exposed = { 0: [], 1: [], 2: [], 3: [] };
         let turn = 0; let isHumanTurn = false; let turnTimer; let currentDiscarder = null;
+        let humanJustDrawn = false; // Tracks if the 14th tile was freshly drawn from the wall
 
         let chips = [300, 300, 300, 300]; 
         let dealer = 0; 
@@ -904,8 +900,15 @@
             if (tile) {
                 hands[playerIdx].push(tile);
                 document.getElementById('wall-count').innerText = mainDeck.length;
-                if (playerIdx === 0) { isReplacementDraw = forceReplacement || wasBonus; }
-                hands[playerIdx].sort();
+                if (playerIdx === 0) { 
+                    isReplacementDraw = forceReplacement || wasBonus; 
+                    humanJustDrawn = true; // Flag that the very last tile is freshly drawn
+                }
+                
+                // ONLY sort the AI hands automatically upon drawing
+                if (playerIdx !== 0) {
+                    hands[playerIdx].sort();
+                }
                 return tile;
             }
             return null;
@@ -936,13 +939,21 @@
             turn = dealer; pendingHuResult = null; lastDiscardedTile = null;
             isReplacementDraw = false; totalDiscardsThisRound = 0; discardsByPlayer = [0,0,0,0];
             missedHuCount = 0;
+            humanJustDrawn = false;
             
             updateLedgerUI();
             document.getElementById('discard').innerHTML = '<div class="discard-title">LIQUIDATED ASSETS<br>POOL</div>';
             
             buildDeck();
             hideOverlay();
+            
+            // Draw initial 13 tiles
             for(let i=0; i<13; i++) { for(let p=0; p<4; p++) drawTile(p); }
+            
+            // Explicity sort the human hand BEFORE the 14th tile is drawn
+            hands[0].sort();
+            
+            // Dealer draws the 14th tile (it will stay at the end and trigger humanJustDrawn = true)
             drawTile(dealer); 
             
             gameState = 'PLAY';
@@ -1113,7 +1124,7 @@
             initRound();
         }
 
-        function getTileHTML(char, isExposed = false, isDiscard = false) {
+        function getTileHTML(char, isExposed = false, isDiscard = false, isDepleted = false) {
             let extraClass = ''; let content = char;
             if (char === '中') { extraClass = 'tile-red'; }
             else if (char === '發') { extraClass = 'tile-green'; }
@@ -1128,7 +1139,11 @@
             
             if (fNum) content = `<div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">${char}<span class="flower-num">${fNum}</span></div>`;
 
-            return `<div class="tile ${extraClass}">${content}</div>`;
+            if (isDepleted) {
+                content += `<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(-30deg); color:#fff; font-size:10px; font-weight:900; background-color:#d32f2f; border:1px solid #fff; padding:2px 4px; box-shadow: 0 0 5px rgba(0,0,0,0.5); z-index:10; white-space:nowrap; letter-spacing:1px; border-radius: 2px;">0 LEFT</div>`;
+            }
+
+            return `<div class="tile ${extraClass}" style="${isDepleted ? 'opacity: 0.6;' : ''}">${content}</div>`;
         }
 
         function renderMeldHtml(meldString) {
@@ -1145,10 +1160,6 @@
 
             const humanHand = document.getElementById('hand-0');
             humanHand.innerHTML = '';
-            
-            let actualMeldsCount = getActualMeldsCount(0);
-            let effectiveLength = hands[0].length + (actualMeldsCount * 3);
-            let isHoldingDrawnTile = (effectiveLength % 3 === 2); 
 
             hands[0].forEach((tile, index) => {
                 let divStr = getTileHTML(tile);
@@ -1156,7 +1167,10 @@
                 tempDiv.innerHTML = divStr;
                 let actualDiv = tempDiv.firstChild;
                 
-                if (isHoldingDrawnTile && index === hands[0].length - 1 && gameState === 'PLAY') actualDiv.classList.add('drawn-tile');
+                // Only separate the tile if it was freshly drawn from the wall
+                if (humanJustDrawn && index === hands[0].length - 1 && gameState === 'PLAY') {
+                    actualDiv.classList.add('drawn-tile');
+                }
                 
                 actualDiv.onclick = () => {
                     playTile(index);
@@ -1192,6 +1206,8 @@
 
         function executeSelfKong(type, tile) {
             hideOverlay();
+            humanJustDrawn = false;
+            
             if (type === 'an') {
                 for(let i=0; i<4; i++) hands[0].splice(hands[0].indexOf(tile), 1);
                 exposed[0].push(tile+tile+tile+tile+'*');
@@ -1200,6 +1216,8 @@
                 exposed[0][exposed[0].indexOf(tile+tile+tile)] = tile+tile+tile+tile;
             }
             document.getElementById('status').innerText = "LOG: Block Consolidated. Sourcing replacement asset...";
+            
+            hands[0].sort(); // Sort existing hand before drawing replacement
             
             let drawn = drawTile(0, true);
             if (!drawn) { triggerDraw(); return; }
@@ -1221,7 +1239,9 @@
 
             isHumanTurn = false;
             isReplacementDraw = false;
+            humanJustDrawn = false; // The freshly drawn tile is now merged/gone
             hideOverlay();
+            
             const discarded = hands[0].splice(index, 1)[0];
             discardsByPlayer[0]++;
             totalDiscardsThisRound++;
@@ -1233,7 +1253,7 @@
             tempDiv.innerHTML = getTileHTML(discarded, false, true);
             document.getElementById('discard').appendChild(tempDiv.firstChild);
             
-            hands[0].sort();
+            hands[0].sort(); // Hand gets sorted cleanly after discard
             renderAll();
             processClaims(discarded, 0); 
         }
@@ -1349,6 +1369,8 @@
         function executeHumanClaim(type, tile) {
             clearTimeout(turnTimer);
             hideOverlay();
+            humanJustDrawn = false; // Reset draw flag, no tile will be separated
+            
             let dp = document.getElementById('discard'); if(dp.lastChild) dp.removeChild(dp.lastChild);
 
             if (type === 'pong') {
@@ -1363,10 +1385,10 @@
                 for(let k=0; k<3; k++) hands[0].splice(hands[0].indexOf(tile), 1);
                 exposed[0].push(tile+tile+tile+tile);
                 
+                hands[0].sort();
                 let drawn = drawTile(0, true); 
                 if (!drawn) { triggerDraw(); return; }
                 
-                hands[0].sort();
                 renderAll();
                 startHumanTurn(); 
             }
@@ -1375,6 +1397,8 @@
         function executeHumanChi(tile, use1, use2) {
             clearTimeout(turnTimer);
             hideOverlay();
+            humanJustDrawn = false; // Reset draw flag, no tile will be separated
+            
             let dp = document.getElementById('discard'); if(dp.lastChild) dp.removeChild(dp.lastChild);
 
             hands[0].splice(hands[0].indexOf(use1), 1);
@@ -1398,9 +1422,10 @@
             turn = (currentPlayer + 1) % 4;
             if (turn === 0) { 
                 isReplacementDraw = false;
+                hands[0].sort(); // Ensure existing 13 tiles are sorted before drawing
                 let drawn = drawTile(0); 
                 if (!drawn) { triggerDraw(); return; }
-                hands[0].sort();
+                // Notice we DO NOT sort here! The 14th tile stays at the back!
                 startHumanTurn(); 
             } 
             else doAiTurn();
@@ -1408,14 +1433,12 @@
 
         function scanWaitProjections() {
             let currentHand = [...hands[0]];
-            let isActiveTurn = (currentHand.length % 3 === 2);
-            
-            if (isActiveTurn) {
+            // We can rely on the humanJustDrawn flag to know if we hold 14 tiles effectively
+            if (humanJustDrawn) {
                 currentHand.pop();
             }
 
             let waits = evaluator.getWaitList(currentHand, exposed[0]);
-            
             let contentHtml = '';
             
             if (waits.length === 0) {
@@ -1425,8 +1448,12 @@
                         > ASSET STRUCTURE INCOMPLETE OR FRAGMENTED
                     </div>`;
             } else {
-                let visualTiles = waits.map(c => getTileHTML(c)).join('');
-                let disclaimer = isActiveTurn ? "<br>> (PROJECTION EXCLUDES CURRENTLY DRAWN TILE)" : "";
+                let visualTiles = waits.map(c => {
+                    let countInHand = currentHand.filter(t => t === c).length;
+                    return getTileHTML(c, false, false, countInHand >= 4);
+                }).join('');
+                
+                let disclaimer = humanJustDrawn ? "<br>> (PROJECTION EXCLUDES CURRENTLY DRAWN TILE)" : "";
                 contentHtml = `
                     <div class="terminal-log" style="color: #4fc3f7; border-color: #4fc3f7; box-shadow: inset 0 0 20px rgba(79,195,247,0.1);">
                         > TARGET ASSETS REQUIRED FOR IMMEDIATE RECONCILIATION${disclaimer}
@@ -1444,14 +1471,13 @@
 
         function showDiscardAssist() {
             let currentHand = [...hands[0]];
-            let isActiveTurn = (currentHand.length % 3 === 2);
             
-            if (!isActiveTurn) {
+            if (!humanJustDrawn && hands[0].length !== 14) { 
+                // Using length !== 14 as a fallback safety catch
                 showOverlay(`<div class="terminal-log" style="color:#ff5252; text-align:center;">> ACTION DENIED: ASSIST ONLY AVAILABLE DURING YOUR TURN TO DISCARD.</div><button class="cancel-btn" onclick="hideOverlay()">CLOSE</button>`, null, "DISCARD ANALYZER");
                 return;
             }
 
-            // Exclude Fei from discard suggestions entirely
             let uniqueTiles = [...new Set(currentHand)].filter(t => t !== '飛');
             let assistHtml = '';
             let results = [];
@@ -1476,7 +1502,15 @@
                 
                 results.forEach(res => {
                     let discardTileHtml = getTileHTML(res.discard);
-                    let waitTilesHtml = res.waits.map(w => getTileHTML(w)).join('');
+                    let waitTilesHtml = res.waits.map(w => {
+                        // Check how many of the needed tile you STILL have in your hand AFTER the discard
+                        let postDiscardHand = [...currentHand];
+                        postDiscardHand.splice(postDiscardHand.indexOf(res.discard), 1);
+                        let postCount = postDiscardHand.filter(t => t === w).length;
+                        
+                        return getTileHTML(w, false, false, postCount >= 4);
+                    }).join('');
+                    
                     assistHtml += `
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: rgba(255,255,255,0.1); padding: 8px; border-left: 4px solid #4caf50;">
                             <div style="display: flex; flex-direction: column; align-items: center; width: 60px;">
